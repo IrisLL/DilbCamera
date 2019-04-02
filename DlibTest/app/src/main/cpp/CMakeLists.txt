@@ -4,16 +4,30 @@
 # Sets the minimum version of CMake required to build the native library.
 
 cmake_minimum_required(VERSION 3.4.1)
+set(CMAKE_VERBOSE_MAKEFILE on)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
+
 
 
 # 设置dlib
 include(dlib/cmake)
 
+# 设置opencv include文件夹
+include_directories(opencv2)
+include_directories(opencv)
 
-# Creates and names a library, sets it as either STATIC
-# or SHARED, and provides the relative paths to its source code.
-# You can define multiple libraries, and CMake builds them for you.
-# Gradle automatically packages shared libraries with your APK.
+# 设置opencv so库
+add_library(
+        libopencv_java3
+        SHARED
+        IMPORTED)
+
+set_target_properties(
+        libopencv_java3
+        PROPERTIES
+        IMPORTED_LOCATION
+       # /openCVLibs/${CMAKE_ANDROID_ARCH_ABI}/libopencv_java3.so
+         ${CMAKE_SOURCE_DIR}/openCVLibs/${ANDROID_ABI}/libopencv_java3.so)
 
 add_library( # Sets the name of the library.
         native-lib
@@ -23,8 +37,12 @@ add_library( # Sets the name of the library.
 
         # Provides a relative path to your source file(s).
         #add
+        face_detector.h
+        face_detector.cpp
+        primitives.h
+        bitmap2mat.cpp
+        bitmap2mat.h
         dlib/all/source.cpp
-
         native-lib.cpp)
 
 # Searches for a specified prebuilt library and stores the path as a
@@ -40,6 +58,10 @@ find_library( # Sets the name of the path variable.
         # you want CMake to locate.
         log)
 
+
+
+
+
 # Specifies libraries CMake should link to your target library. You
 # can link multiple libraries, such as libraries you define in this
 # build script, prebuilt third-party libraries, or system libraries.
@@ -47,8 +69,10 @@ find_library( # Sets the name of the path variable.
 target_link_libraries( # Specifies the target library.
         native-lib
         dlib
-
+        libopencv_java3
+        jnigraphics
         # Links the target library to the log library
         # included in the NDK.
-        ${log-lib})
+        ${log-lib}
+        )
 

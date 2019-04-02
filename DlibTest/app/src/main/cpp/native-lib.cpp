@@ -4,297 +4,198 @@
 
 extern "C" JNIEXPORT jstring JNICALL
 Java_com_example_dlibtest_MainActivity_stringFromJNI(
-        JNIEnv *env,
+        JNIEnv *env,   //C++中env是一个一级指针
         jobject ) {
     std::string hello = "Hello from C++";
     return env->NewStringUTF(hello.c_str());
 }
 */
+
 #include <jni.h>
-#include <string>
+#include <android/bitmap.h>
+#include <bitmap2mat.h>
+#include <primitives.h>
+#include <face_detector.h>
 
-#include <iostream>
-#include <dlib/matrix.h>
-#include <sstream>
+using namespace cv;
 
-using namespace dlib;
 using namespace std;
-
-// ----------------------------------------------------------------------------------------
-
-string matrix_ex()
-{
-    stringstream ssout;
-    // Let's begin this example by using the library to solve a simple
-    // linear system.
-    //
-    // We will find the value of x such that y = M*x where
-    //
-    //      3.5
-    // y =  1.2
-    //      7.8
-    //
-    // and M is
-    //
-    //      54.2   7.4   12.1
-    // M =  1      2     3
-    //      5.9    0.05  1
-
-
-    // First let's declare these 3 matrices.
-    // This declares a matrix that contains doubles and has 3 rows and 1 column.
-    // Moreover, it's size is a compile time constant since we put it inside the <>.
-    matrix<double,3,1> y;
-    // Make a 3 by 3 matrix of doubles for the M matrix.  In this case, M is
-    // sized at runtime and can therefore be resized later by calling M.set_size().
-    matrix<double> M(3,3);
-
-    // You may be wondering why someone would want to specify the size of a
-    // matrix at compile time when you don't have to.  The reason is two fold.
-    // First, there is often a substantial performance improvement, especially
-    // for small matrices, because it enables a number of optimizations that
-    // otherwise would be impossible.  Second, the dlib::matrix object checks
-    // these compile time sizes to ensure that the matrices are being used
-    // correctly.  For example, if you attempt to compile the expression y*y you
-    // will get a compiler error since that is not a legal matrix operation (the
-    // matrix dimensions don't make sense as a matrix multiplication).  So if
-    // you know the size of a matrix at compile time then it is always a good
-    // idea to let the compiler know about it.
-
-
-
-
-    // Now we need to initialize the y and M matrices and we can do so like this:
-    M = 54.2,  7.4,  12.1,
-            1,     2,    3,
-            5.9,   0.05, 1;
-
-    y = 3.5,
-            1.2,
-            7.8;
-
-
-    // The solution to y = M*x can be obtained by multiplying the inverse of M
-    // with y.  As an aside, you should *NEVER* use the auto keyword to capture
-    // the output from a matrix expression.  So don't do this: auto x = inv(M)*y;
-    // To understand why, read the matrix_expressions_ex.cpp example program.
-    matrix<double> x = inv(M)*y;
-
-    cout << "x: \n" << x << endl;
-    ssout << "x: \n" << x << endl;
-
-    // We can check that it really worked by plugging x back into the original equation
-    // and subtracting y to see if we get a column vector with values all very close
-    // to zero (Which is what happens.  Also, the values may not be exactly zero because
-    // there may be some numerical error and round off).
-    cout << "M*x - y: \n" << M*x - y << endl;
-    ssout << "M*x - y: \n" << M*x - y << endl;
-
-
-    // Also note that we can create run-time sized column or row vectors like so
-    matrix<double,0,1> runtime_sized_column_vector;
-    matrix<double,1,0> runtime_sized_row_vector;
-    // and then they are sized by saying
-    runtime_sized_column_vector.set_size(3);
-
-    // Similarly, the x matrix can be resized by calling set_size(num rows, num columns).  For example
-    x.set_size(3,4);  // x now has 3 rows and 4 columns.
-
-
-
-    // The elements of a matrix are accessed using the () operator like so:
-    cout << M(0,1) << endl;
-    ssout << M(0,1) << endl;
-    // The above expression prints out the value 7.4.  That is, the value of
-    // the element at row 0 and column 1.
-
-    // If we have a matrix that is a row or column vector.  That is, it contains either
-    // a single row or a single column then we know that any access is always either
-    // to row 0 or column 0 so we can omit that 0 and use the following syntax.
-    cout << y(1) << endl;
-    ssout << y(1) << endl;
-    // The above expression prints out the value 1.2
-
-
-    // Let's compute the sum of elements in the M matrix.
-    double M_sum = 0;
-    // loop over all the rows
-    for (long r = 0; r < M.nr(); ++r)
-    {
-        // loop over all the columns
-        for (long c = 0; c < M.nc(); ++c)
-        {
-            M_sum += M(r,c);
-        }
-    }
-    cout << "sum of all elements in M is " << M_sum << endl;
-    ssout << "sum of all elements in M is " << M_sum << endl;
-
-    // The above code is just to show you how to loop over the elements of a matrix.  An
-    // easier way to find this sum is to do the following:
-    cout << "sum of all elements in M is " << sum(M) << endl;
-    ssout << "sum of all elements in M is " << sum(M) << endl;
-
-
-
-    // Note that you can always print a matrix to an output stream by saying:
-    cout << M << endl;
-    ssout << M << endl;
-    // which will print:
-    //   54.2  7.4 12.1
-    //      1    2    3
-    //    5.9 0.05    1
-
-    // However, if you want to print using comma separators instead of spaces you can say:
-    cout << csv << M << endl;
-    ssout << csv << M << endl;
-    // and you will instead get this as output:
-    //   54.2, 7.4, 12.1
-    //   1, 2, 3
-    //   5.9, 0.05, 1
-
-    // Conversely, you can also read in a matrix that uses either space, tab, or comma
-    // separated values by uncommenting the following:
-    // cin >> M;
-
-
-
-    // -----------------------------  Comparison with MATLAB ------------------------------
-    // Here I list a set of Matlab commands and their equivalent expressions using the dlib
-    // matrix.  Note that there are a lot more functions defined for the dlib::matrix.  See
-    // the HTML documentation for a full listing.
-
-    matrix<double> A, B, C, D, E;
-    matrix<int> Aint;
-    matrix<long> Blong;
-
-    // MATLAB: A = eye(3)
-    A = identity_matrix<double>(3);
-
-    // MATLAB: B = ones(3,4)
-    B = ones_matrix<double>(3,4);
-
-    // MATLAB: B = rand(3,4)
-    B = randm(3,4);
-
-    // MATLAB: C = 1.4*A
-    C = 1.4*A;
-
-    // MATLAB: D = A.*C
-    D = pointwise_multiply(A,C);
-
-    // MATLAB: E = A * B
-    E = A*B;
-
-    // MATLAB: E = A + B
-    E = A + C;
-
-    // MATLAB: E = A + 5
-    E = A + 5;
-
-    // MATLAB: E = E'
-    E = trans(E);  // Note that if you want a conjugate transpose then you need to say conj(trans(E))
-
-    // MATLAB: E = B' * B
-    E = trans(B)*B;
-
-    double var;
-    // MATLAB: var = A(1,2)
-    var = A(0,1); // dlib::matrix is 0 indexed rather than starting at 1 like Matlab.
-
-    // MATLAB: C = round(C)
-    C = round(C);
-
-    // MATLAB: C = floor(C)
-    C = floor(C);
-
-    // MATLAB: C = ceil(C)
-    C = ceil(C);
-
-    // MATLAB: C = diag(B)
-    C = diag(B);
-
-    // MATLAB: B = cast(A, "int32")
-    Aint = matrix_cast<int>(A);
-
-    // MATLAB: A = B(1,:)
-    A = rowm(B,0);
-
-    // MATLAB: A = B([1:2],:)
-    A = rowm(B,range(0,1));
-
-    // MATLAB: A = B(:,1)
-    A = colm(B,0);
-
-    // MATLAB: A = [1:5]
-    Blong = range(1,5);
-
-    // MATLAB: A = [1:2:5]
-    Blong = range(1,2,5);
-
-    // MATLAB: A = B([1:3], [1:2])
-    A = subm(B, range(0,2), range(0,1));
-    // or equivalently
-    A = subm(B, rectangle(0,0,1,2));
-
-
-    // MATLAB: A = B([1:3], [1:2:4])
-    A = subm(B, range(0,2), range(0,2,3));
-
-    // MATLAB: B(:,:) = 5
-    B = 5;
-    // or equivalently
-    set_all_elements(B,5);
-
-
-    // MATLAB: B([1:2],[1,2]) = 7
-    set_subm(B,range(0,1), range(0,1)) = 7;
-
-    // MATLAB: B([1:3],[2:3]) = A
-    set_subm(B,range(0,2), range(1,2)) = A;
-
-    // MATLAB: B(:,1) = 4
-    set_colm(B,0) = 4;
-
-    // MATLAB: B(:,[1:2]) = 4
-    set_colm(B,range(0,1)) = 4;
-
-    // MATLAB: B(:,1) = B(:,2)
-    set_colm(B,0) = colm(B,1);
-
-    // MATLAB: B(1,:) = 4
-    set_rowm(B,0) = 4;
-
-    // MATLAB: B(1,:) = B(2,:)
-    set_rowm(B,0) = rowm(B,1);
-
-    // MATLAB: var = det(E' * E)
-    var = det(trans(E)*E);
-
-    // MATLAB: C = pinv(E)
-    C = pinv(E);
-
-    // MATLAB: C = inv(E)
-    C = inv(E);
-
-    // MATLAB: [A,B,C] = svd(E)
-    svd(E,A,B,C);
-
-    // MATLAB: A = chol(E,'lower')
-    A = chol(E);
-
-    // MATLAB: var = min(min(A))
-    var = min(A);
-
-    return ssout.str();
-}
-
-extern "C"
-JNIEXPORT jstring JNICALL
-Java_com_example_dlibtest_MainActivity_stringFromJNI(
+extern "C" {
+// 注意这里的函数名格式：Java_各级包名_类名_函数名(参数...),需严格按照这种格式，否则会出错
+JNIEXPORT jintArray JNICALL Java_com_example_dlibtest_PicResultActivity_gray(
         JNIEnv *env,
-        jobject /* this */) {
-    //std::string hello = "Hello from C++";
-    std::string hello = matrix_ex();
-    return env->NewStringUTF(hello.c_str());
+        jobject instance,
+        jintArray buf,
+        jint w,
+        jint h) {
+    jint *cbuf = env->GetIntArrayElements(buf, JNI_FALSE);
+    if (cbuf == NULL) { return 0; }
+    Mat imgData(h, w, CV_8UC4, (unsigned char *) cbuf);
+    uchar *ptr = imgData.ptr(0);
+    for (int i = 0; i < w * h; i++) {
+        //计算公式：Y(亮度) = 0.299*R + 0.587*G + 0.114*B
+        // 对于一个int四字节，其彩色值存储方式为：BGRA
+        int grayScale = (int) (ptr[4 * i + 2] * 0.299 + ptr[4 * i + 1] * 0.587 +
+                               ptr[4 * i + 0] * 0.114);
+        ptr[4 * i + 1] = grayScale;
+        ptr[4 * i + 2] = grayScale;
+        ptr[4 * i + 0] = grayScale;
+    }
+    int size = w * h;
+    jintArray result = env->NewIntArray(size);
+    env->SetIntArrayRegion(result, 0, size, cbuf);
+    env->ReleaseIntArrayElements(buf, cbuf, 0);
+    return result;
 }
+
+}
+//////////////////////////////////////////////////////
+
+
+JNI_VisionDetRet *g_pJNI_VisionDetRet; //定义了JNI_VisionDetRet类型一个指针 pJNI_VisionDetRet
+JavaVM *g_javaVM = NULL;  //定义了虚拟机JavaVM类型 空指针 g_javaVM
+
+/**
+ *
+ * @param vm
+ * @param reserved
+ * @return
+ * 动态加载到本地
+ */
+JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
+    g_javaVM = vm;
+    JNIEnv *env;
+    vm->GetEnv((void **) &env, JNI_VERSION_1_6);
+
+    g_pJNI_VisionDetRet = new JNI_VisionDetRet(env);
+
+    return JNI_VERSION_1_6;
+}
+
+void JNI_OnUnload(JavaVM *vm, void *reserved) {
+
+    g_javaVM = NULL;
+
+    delete g_pJNI_VisionDetRet;
+}
+
+
+namespace
+{
+#define JAVA_NULL 0
+    using DetPtr = FaceDetector *;
+    class JNI_FaceDet {
+    public:
+        JNI_FaceDet(JNIEnv *env) {
+            jclass clazz = env->FindClass(CLASSNAME_FACE_DET);
+            //FaceDet java类中声明的变量  private long mNativeFaceDetContext;
+            mNativeContext = env->GetFieldID(clazz, "mNativeFaceDetContext", "J");
+            env->DeleteLocalRef(clazz);
+        }
+
+        DetPtr getDetectorPtrFromJava(JNIEnv *env, jobject thiz) {
+            //返回Java中的 mNativeFaceDetContext 值
+            DetPtr const p = (DetPtr) env->GetLongField(thiz, mNativeContext);
+            return p;
+        }
+
+        void setDetectorPtrToJava(JNIEnv *env, jobject thiz, jlong ptr) {
+            //设置Java中的 mNativeFaceDetContext 值
+            env->SetLongField(thiz, mNativeContext, ptr);
+        }
+
+        jfieldID mNativeContext;
+    };
+
+    // Protect getting/setting and creating/deleting pointer between java/native
+    std::mutex gLock;
+
+    std::shared_ptr<JNI_FaceDet> getJNI_FaceDet(JNIEnv *env) {
+        static std::once_flag sOnceInitflag;
+        static std::shared_ptr<JNI_FaceDet> sJNI_FaceDet;
+        std::call_once(sOnceInitflag, [env]() {
+            //动态内存分配对象并初始化它
+            sJNI_FaceDet = std::make_shared<JNI_FaceDet>(env);
+        });
+        return sJNI_FaceDet;
+    }
+
+    DetPtr const getDetPtr(JNIEnv *env, jobject thiz) {
+        std::lock_guard<std::mutex> lock(gLock);
+        return getJNI_FaceDet(env)->getDetectorPtrFromJava(env, thiz);
+    }
+
+    // The function to set a pointer to java and delete it if newPtr is empty
+    void setDetPtr(JNIEnv *env, jobject thiz, DetPtr newPtr) {
+        std::lock_guard<std::mutex> lock(gLock);
+        DetPtr oldPtr = getJNI_FaceDet(env)->getDetectorPtrFromJava(env, thiz);
+        if (oldPtr != JAVA_NULL) {
+            delete oldPtr;
+        }
+        getJNI_FaceDet(env)->setDetectorPtrToJava(env, thiz, (jlong) newPtr);
+    }
+}
+
+//C++宏定义，表示如果是一段C++代码，执行下面
+#ifdef __cplusplus
+extern "C" {
+#endif
+    //调用FaceDet java类的方法
+#define DLIB_FACE_JNI_METHOD(METHOD_NAME) Java_com_example_dlibtest_Dlib_FaceDet_##METHOD_NAME
+
+void JNIEXPORT
+DLIB_FACE_JNI_METHOD(jniNativeClassInit)(JNIEnv *env, jclass _this) {}
+
+//jobjectArray 为 Object[]任何对象的数组
+//获取矩形框的结果
+jobjectArray getRecResult(JNIEnv *env, DetPtr faceDetector, const int &size) {
+    jobjectArray jDetRetArray = JNI_VisionDetRet::createJObjectArray(env, size);
+    for (int i = 0; i < size; i++) {
+        //把VisionDetRet得到的点传进去
+        jobject jDetRet = JNI_VisionDetRet::createJObject(env);
+        env->SetObjectArrayElement(jDetRetArray, i, jDetRet);
+        dlib::rectangle rect = faceDetector->getDetResultRects()[i];
+        //调用dlib画图
+        g_pJNI_VisionDetRet->setRect(env, jDetRet, rect.left(), rect.top(),
+                                     rect.right(), rect.bottom());
+    }
+    //返回这个对象数组（画出的图）
+    return jDetRetArray;
+}
+
+//FaceDet类中声明的 VisionDetRet[] jniBitmapDet(Bitmap bitmap);
+JNIEXPORT jobjectArray JNICALL
+DLIB_FACE_JNI_METHOD(jniBitmapDet)(JNIEnv *env, jobject thiz, jobject bitmap) {
+    cv::Mat rgbaMat;
+    cv::Mat bgrMat;
+    //把Bitmap图片转成RGB矩阵
+    jniutils::ConvertBitmapToRGBAMat(env, bitmap, rgbaMat, true);
+    cv::cvtColor(rgbaMat, bgrMat, cv::COLOR_RGBA2BGR);
+    DetPtr mDetPtr = getDetPtr(env, thiz);
+    jint size = mDetPtr->Detect(bgrMat);
+    return getRecResult(env, mDetPtr, size);
+}
+
+
+//FaceDet类声明的    private synchronized native int jniInit();
+//初始化
+jint JNIEXPORT JNICALL
+DLIB_FACE_JNI_METHOD(jniInit)(JNIEnv *env, jobject thiz) {
+    DetPtr mDetPtr = new FaceDetector();
+    setDetPtr(env, thiz, mDetPtr);
+    return JNI_OK;
+}
+
+//FaceDet类声明的  private synchronized native int jniDeInit();
+jint JNIEXPORT JNICALL
+DLIB_FACE_JNI_METHOD(jniDeInit)(JNIEnv *env, jobject thiz) {
+    setDetPtr(env, thiz, JAVA_NULL);
+    return JNI_OK;
+}
+
+#ifdef __cplusplus
+}
+#endif
+
+
+
