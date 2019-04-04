@@ -4,9 +4,14 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.graphics.Point;
+import android.provider.SyncStateContract;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.ImageView;
+
+import com.example.dlibtest.Dlib.FaceDet;
+import com.example.dlibtest.Dlib.VisionDetRet;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -14,7 +19,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class PicResultActivity extends AppCompatActivity {
 
@@ -38,20 +45,10 @@ public class PicResultActivity extends AppCompatActivity {
         //Bitmap bitmap = BitmapFactory.decodeFile(path);
         //imageView.setImageBitmap(bitmap);
         saveBitmap(bitmap);
-
-        //转成灰度，测试openCV c++
-        int w = bitmap.getWidth(), h = bitmap.getHeight();
-        int[] pix = new int[w * h];
-        bitmap.getPixels(pix, 0, w, 0, 0, w, h);
-        int [] resultPixes=gray(pix,w,h);
-        Bitmap result = Bitmap.createBitmap(w,h, Bitmap.Config.RGB_565);
-        result.setPixels(resultPixes, 0, w, 0, 0,w, h);
-
-
-        imageView.setImageBitmap(result);
+        imageView.setImageBitmap(bitmap);
     }
 
-    public native int[] gray(int[] buf, int w, int h);
+
 
     /**
      *

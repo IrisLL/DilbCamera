@@ -38,7 +38,7 @@ public class FaceDet {
         jniInit(mLandMarkPath);
     }
 
-    @Nullable
+  @Nullable
     @WorkerThread
     public List<VisionDetRet> detect(@NonNull String path) {
         VisionDetRet[] detRets = jniDetect(path);

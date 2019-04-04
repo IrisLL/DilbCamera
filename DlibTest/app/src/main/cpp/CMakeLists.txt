@@ -29,6 +29,7 @@ set_target_properties(
        # /openCVLibs/${CMAKE_ANDROID_ARCH_ABI}/libopencv_java3.so
          ${CMAKE_SOURCE_DIR}/openCVLibs/${ANDROID_ABI}/libopencv_java3.so)
 
+
 add_library( # Sets the name of the library.
         native-lib
 
@@ -42,6 +43,10 @@ add_library( # Sets the name of the library.
         primitives.h
         bitmap2mat.cpp
         bitmap2mat.h
+        rgb2yuv.cpp
+        rgb2yuv.h
+        yuv2rgb.cpp
+        yuv2rgb.h
         dlib/all/source.cpp
         native-lib.cpp)
 

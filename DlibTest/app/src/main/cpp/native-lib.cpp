@@ -16,39 +16,12 @@ Java_com_example_dlibtest_MainActivity_stringFromJNI(
 #include <bitmap2mat.h>
 #include <primitives.h>
 #include <face_detector.h>
+#include <yuv2rgb.h>
+#include <rgb2yuv.h>
 
 using namespace cv;
-
 using namespace std;
-extern "C" {
-// 注意这里的函数名格式：Java_各级包名_类名_函数名(参数...),需严格按照这种格式，否则会出错
-JNIEXPORT jintArray JNICALL Java_com_example_dlibtest_PicResultActivity_gray(
-        JNIEnv *env,
-        jobject instance,
-        jintArray buf,
-        jint w,
-        jint h) {
-    jint *cbuf = env->GetIntArrayElements(buf, JNI_FALSE);
-    if (cbuf == NULL) { return 0; }
-    Mat imgData(h, w, CV_8UC4, (unsigned char *) cbuf);
-    uchar *ptr = imgData.ptr(0);
-    for (int i = 0; i < w * h; i++) {
-        //计算公式：Y(亮度) = 0.299*R + 0.587*G + 0.114*B
-        // 对于一个int四字节，其彩色值存储方式为：BGRA
-        int grayScale = (int) (ptr[4 * i + 2] * 0.299 + ptr[4 * i + 1] * 0.587 +
-                               ptr[4 * i + 0] * 0.114);
-        ptr[4 * i + 1] = grayScale;
-        ptr[4 * i + 2] = grayScale;
-        ptr[4 * i + 0] = grayScale;
-    }
-    int size = w * h;
-    jintArray result = env->NewIntArray(size);
-    env->SetIntArrayRegion(result, 0, size, cbuf);
-    env->ReleaseIntArrayElements(buf, cbuf, 0);
-    return result;
-}
 
-}
 //////////////////////////////////////////////////////
 
 
@@ -165,7 +138,7 @@ jobjectArray getRecResult(JNIEnv *env, DetPtr faceDetector, const int &size) {
 
 //FaceDet类中声明的 VisionDetRet[] jniBitmapDet(Bitmap bitmap);
 JNIEXPORT jobjectArray JNICALL
-DLIB_FACE_JNI_METHOD(jniBitmapDet)(JNIEnv *env, jobject thiz, jobject bitmap) {
+DLIB_FACE_JNI_METHOD(jniBitmapDetect)(JNIEnv *env, jobject thiz, jobject bitmap) {
     cv::Mat rgbaMat;
     cv::Mat bgrMat;
     //把Bitmap图片转成RGB矩阵
@@ -177,13 +150,18 @@ DLIB_FACE_JNI_METHOD(jniBitmapDet)(JNIEnv *env, jobject thiz, jobject bitmap) {
 }
 
 
+
 //FaceDet类声明的    private synchronized native int jniInit();
 //初始化
 jint JNIEXPORT JNICALL
-DLIB_FACE_JNI_METHOD(jniInit)(JNIEnv *env, jobject thiz) {
-    DetPtr mDetPtr = new FaceDetector();
-    setDetPtr(env, thiz, mDetPtr);
-    return JNI_OK;
+DLIB_FACE_JNI_METHOD(jniInit)(JNIEnv *env, jobject instance,
+        jstring landmarkModelPath_) {
+const char *landmarkModelPath = env->GetStringUTFChars(landmarkModelPath_, 0);
+
+DetPtr mDetPtr = new FaceDetector();
+setDetPtr(env, instance, mDetPtr);
+env->ReleaseStringUTFChars(landmarkModelPath_, landmarkModelPath);
+return JNI_OK;
 }
 
 //FaceDet类声明的  private synchronized native int jniDeInit();
@@ -197,5 +175,68 @@ DLIB_FACE_JNI_METHOD(jniDeInit)(JNIEnv *env, jobject thiz) {
 }
 #endif
 
+///////////////////////////////
 
+
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_dlibtest_ImageUtils_convertYUV420ToARGB8888(JNIEnv *env, jclass clazz,
+                                               jbyteArray y, jbyteArray u,
+                                               jbyteArray v, jintArray output,
+                                               jint width, jint height,
+                                               jint y_row_stride, jint uv_row_stride,
+                                               jint uv_pixel_stride,
+                                               jboolean halfSize) {
+    jboolean inputCopy = JNI_FALSE;
+    jbyte *const y_buff = env->GetByteArrayElements(y, &inputCopy);
+    jboolean outputCopy = JNI_FALSE;
+    jint *const o = env->GetIntArrayElements(output, &outputCopy);
+
+    if (halfSize) {
+        ConvertYUV420SPToARGB8888HalfSize(reinterpret_cast<uint8_t *>(y_buff),
+                                          reinterpret_cast<uint32_t *>(o), width,
+                                          height);
+    } else {
+        jbyte *const u_buff = env->GetByteArrayElements(u, &inputCopy);
+        jbyte *const v_buff = env->GetByteArrayElements(v, &inputCopy);
+
+        ConvertYUV420ToARGB8888(
+                reinterpret_cast<uint8_t *>(y_buff), reinterpret_cast<uint8_t *>(u_buff),
+                reinterpret_cast<uint8_t *>(v_buff), reinterpret_cast<uint32_t *>(o),
+                width, height, y_row_stride, uv_row_stride, uv_pixel_stride);
+
+        env->ReleaseByteArrayElements(u, u_buff, JNI_ABORT);
+        env->ReleaseByteArrayElements(v, v_buff, JNI_ABORT);
+    }
+
+    env->ReleaseByteArrayElements(y, y_buff, JNI_ABORT);
+    env->ReleaseIntArrayElements(output, o, 0);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_dlibtest_ImageUtils_convertYUV420SPToARGB8888(JNIEnv *env, jclass clazz,
+                                                 jbyteArray input, jintArray output,
+                                                 jint width, jint height,
+                                                 jboolean halfSize) {
+    jboolean inputCopy = JNI_FALSE;
+    jbyte *const i = env->GetByteArrayElements(input, &inputCopy);
+
+    jboolean outputCopy = JNI_FALSE;
+    jint *const o = env->GetIntArrayElements(output, &outputCopy);
+
+    if (halfSize) {
+        ConvertYUV420SPToARGB8888HalfSize(reinterpret_cast<uint8_t *>(i),
+                                          reinterpret_cast<uint32_t *>(o), width,
+                                          height);
+    } else {
+        ConvertYUV420SPToARGB8888(reinterpret_cast<uint8_t *>(i),
+                                  reinterpret_cast<uint8_t *>(i) + width * height,
+                                  reinterpret_cast<uint32_t *>(o), width, height);
+    }
+
+    env->ReleaseByteArrayElements(input, i, JNI_ABORT);
+    env->ReleaseIntArrayElements(output, o, 0);
+}
 
