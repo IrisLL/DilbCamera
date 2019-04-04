@@ -53,8 +53,6 @@ public class MainActivity extends AppCompatActivity {
         System.loadLibrary("native-lib");
         System.loadLibrary("opencv_java3");
 
-
-
     }
 
     private static final int RESULT_LOAD_IMG = 1;

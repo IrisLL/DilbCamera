@@ -98,7 +98,7 @@ public class OnGetImageListener implements ImageReader.OnImageAvailableListener 
         Log.d(TAG, String.format("screen size (%d,%d)", screen_width, screen_height));
         if (screen_width < screen_height) {
             orientation = Configuration.ORIENTATION_PORTRAIT;
-            mScreenRotation = 90;
+            mScreenRotation = 270;      //////////方向
         } else {
             orientation = Configuration.ORIENTATION_LANDSCAPE;
             mScreenRotation = 0;
@@ -206,16 +206,22 @@ public class OnGetImageListener implements ImageReader.OnImageAvailableListener 
 
         if (SAVE_PREVIEW_BITMAP) {
             ImageUtils.saveBitmap(mCroppedBitmap);
+            Log.i(TAG,"mCroppedBitmap保存成功");
         }
 
         mInferenceHandler.post(
                 new Runnable() {
                     @Override
                     public void run() {
-                        if (!new File(Constants.getFaceShapeModelPath()).exists()) {
-                            mTransparentTitleView.setText("Copying landmark model to " + Constants.getFaceShapeModelPath());
-                            FileUtils.copyFileFromRawToOthers(mContext, R.raw.shape_predictor_68_face_landmarks, Constants.getFaceShapeModelPath());
-                        }
+                        Log.i(TAG,"我执行到Runnable啦！");
+                            if (!new File(Constants.getFaceShapeModelPath()).exists()) {
+                                mTransparentTitleView.setText("Copying landmark model to " + Constants.getFaceShapeModelPath());
+                                Log.i(TAG,"copyFaceShape68ModelFile "+ Constants.getFaceShapeModelPath()+"正常");
+                                FileUtils.copyFileFromRawToOthers(mContext, R.raw.shape_predictor_68_face_landmarks, Constants.getFaceShapeModelPath());
+                            }
+                            else
+                                Log.i(TAG,"copyFaceShape68ModelFile "+ Constants.getFaceShapeModelPath()+" 有异常");
+
 
                         long startTime = System.currentTimeMillis();
                         List<VisionDetRet> results;
@@ -234,6 +240,7 @@ public class OnGetImageListener implements ImageReader.OnImageAvailableListener 
                                 bounds.right = (int) (ret.getRight() * resizeRatio);
                                 bounds.bottom = (int) (ret.getBottom() * resizeRatio);
                                 Canvas canvas = new Canvas(mCroppedBitmap);
+                                Log.i(TAG,"画布大小：w"+String.valueOf(canvas.getWidth())+"  h"+String.valueOf(canvas.getHeight()));
                                 canvas.drawRect(bounds, mFaceLandmardkPaint);
 
                                 // Draw landmark

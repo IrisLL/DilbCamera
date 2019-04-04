@@ -6,8 +6,8 @@
 #define DLIBTEST_BITMAP2MAT_H
 
 #include <android/bitmap.h>
-#include <opencv2/core/core.hpp>
-#include <opencv2/opencv.hpp>
+#include "opencv2/core/core.hpp"
+#include "opencv2/opencv.hpp"
 #include "opencv2/core/mat.hpp"
 
 class bitmap2mat {
