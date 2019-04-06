@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="LoginActivity"
+    android:background="@drawable/login">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="120dp"
+        android:gravity="center_vertical"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="45dp"
+            android:orientation="horizontal">
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="70dp"
+                android:layout_marginRight="70dp"
+                android:background="@drawable/username"
+                android:textColor="@color/cardview_light_background"
+                android:textSize="16sp" />
+
+            <EditText
+                android:id="@+id/login_account"
+                android:layout_width="200dp"
+                android:layout_height="45dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="130dp"
+                android:layout_marginRight="70dp"
+                android:background="@null"
+                android:layout_weight="1"
+                android:textColor="@color/cardview_light_background"
+                android:textSize="16sp"/>
+        </RelativeLayout>
+
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="45dp"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="70dp"
+                android:layout_marginRight="70dp"
+                android:background="@drawable/passpordicon"
+                android:inputType="none"
+                android:textColor="@color/cardview_light_background"
+                android:textSize="16sp" />
+
+            <EditText
+                android:id="@+id/login_password"
+                android:layout_height="45dp"
+                android:layout_width="200dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="130dp"
+                android:layout_marginRight="70dp"
+                android:layout_weight="1"
+                android:background="@null"
+                android:inputType="textPassword"
+                android:textColor="@color/cardview_light_background"
+                android:textSize="16sp"/>
+        </RelativeLayout>
+
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="70dp"
+            android:layout_marginRight="70dp">
+
+            <CheckBox
+                android:id="@+id/remember_pass"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="记住密码"
+                android:textSize="16sp"
+                android:textColor="@color/cardview_light_background"/>
+        </LinearLayout>
+
+
+            <Button
+                android:id="@+id/login"
+                android:layout_width="wrap_content"
+                android:layout_height="45dp"
+                android:layout_marginTop="30dp"
+                android:layout_marginLeft="70dp"
+                android:layout_marginRight="70dp"
+                android:layout_gravity="center_horizontal"
+                android:background="@drawable/loginicon" />
+
+            <Button
+                android:id="@+id/register"
+                android:layout_width="120dp"
+                android:layout_height="40dp"
+                android:layout_marginLeft="80dp"
+                android:layout_marginRight="80dp"
+                android:background="@drawable/rigstericon"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="100dp"
+                 />
+
+
+
+    </LinearLayout>
+
+
+</android.support.constraint.ConstraintLayout>

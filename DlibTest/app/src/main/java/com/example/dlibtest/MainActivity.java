@@ -4,6 +4,7 @@ package com.example.dlibtest;
 import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -65,6 +66,10 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private static final String TAG = "MainActivity";
+    private static final String USERNAME = "userName";
+
+
+
 /*
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -144,6 +149,12 @@ public class MainActivity extends AppCompatActivity {
 
 
         Toast.makeText(MainActivity.this, getString(R.string.description_info), Toast.LENGTH_LONG).show();
+    }
+
+    public static void actionStart(Context context, String user){
+        Intent intent = new Intent(context, MainActivity.class);
+        intent.putExtra(USERNAME, user);
+        context.startActivity(intent);
     }
 
     private static boolean verifyPermissions(Activity activity) {

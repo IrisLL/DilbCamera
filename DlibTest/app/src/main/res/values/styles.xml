@@ -1,12 +1,12 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.DayNight.DarkActionBar">
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
 
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorAccent">@color/cardview_light_background</item>
     </style>
 
     <style name="AppTheme.NoActionBar">
@@ -16,6 +16,9 @@
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
-
+    <style name="CheckBox_Style_01" parent="@android:style/Widget.Material.CompoundButton.CheckBox" >
+        <item name="android:colorControlActivated">@color/cardview_shadow_start_color</item> //选中的颜色
+        <item name="android:colorControlNormal">@color/colorPrimary</item>//默认的颜色
+    </style>
 </resources>
 
