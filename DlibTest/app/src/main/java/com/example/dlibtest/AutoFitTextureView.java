@@ -2,7 +2,10 @@ package com.example.dlibtest;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.TextureView;
+
+import static android.support.constraint.Constraints.TAG;
 
 public class AutoFitTextureView extends TextureView {
     private int mRatioWidth = 0;
@@ -33,13 +36,16 @@ public class AutoFitTextureView extends TextureView {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         int width = MeasureSpec.getSize(widthMeasureSpec);
         int height = MeasureSpec.getSize(heightMeasureSpec);
+        Log.i(TAG,"AutoFitTexture inital"+String.valueOf(width)+String.valueOf(height));
         if (0 == mRatioWidth || 0 == mRatioHeight) {
             setMeasuredDimension(width, height);
         } else {
             if (width < height * mRatioWidth / mRatioHeight) {
+                Log.i(TAG,"AutoFitTexture1"+String.valueOf(width)+String.valueOf(width*mRatioHeight/mRatioWidth));
                 setMeasuredDimension(width, width * mRatioHeight / mRatioWidth);
             } else {
                 setMeasuredDimension(height * mRatioWidth / mRatioHeight, height);
+                Log.i(TAG,"AutoFitTexture2"+String.valueOf(height*mRatioWidth/mRatioHeight)+String.valueOf(height));
             }
         }
     }

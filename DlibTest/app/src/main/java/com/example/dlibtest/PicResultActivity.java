@@ -5,10 +5,13 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.Point;
+import android.os.Environment;
 import android.provider.SyncStateContract;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.example.dlibtest.Dlib.FaceDet;
 import com.example.dlibtest.Dlib.VisionDetRet;
@@ -27,14 +30,16 @@ public class PicResultActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Toast.makeText(this,"照片结果",Toast.LENGTH_SHORT);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_picresult);
         String path = getIntent().getStringExtra("picPath");
         ImageView imageView = (ImageView) findViewById(R.id.pic);
-        int cameraPos= getIntent().getIntExtra("cameraPosition",0);
+        int cameraPos= getIntent().getIntExtra("cameraID",0);
 
         //把得到的图片旋转90度，成为常见方法
-        Bitmap bitmap=decodeSampledBitmapFromFilePath(path,800,400);
+       // Bitmap bitmap=decodeSampledBitmapFromFilePath(path,800,400);
+        Bitmap bitmap = BitmapFactory.decodeFile(path);
         Matrix matrix=new Matrix();
         if(cameraPos==1)
             matrix.setRotate(90);
@@ -42,7 +47,7 @@ public class PicResultActivity extends AppCompatActivity {
             matrix.setRotate(270);
         bitmap=Bitmap.createBitmap(bitmap,0,0,bitmap.getWidth(),bitmap.getHeight(),matrix,true);
 
-        //Bitmap bitmap = BitmapFactory.decodeFile(path);
+        Toast.makeText(this,"width"+bitmap.getWidth()+"  height"+bitmap.getHeight(),Toast.LENGTH_SHORT);
         //imageView.setImageBitmap(bitmap);
         saveBitmap(bitmap);
         imageView.setImageBitmap(bitmap);
@@ -103,12 +108,17 @@ public class PicResultActivity extends AppCompatActivity {
      */
     public void saveBitmap(Bitmap bmToSave) {
         //以时间为文件名
+        //final String root = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "dlib";
+        //final File myDir = new File(root);
+
         SimpleDateFormat simpleDateFormat =
                 new SimpleDateFormat("yyyyMMddhhmmss");
         String time = simpleDateFormat.format(new Date());
         File file = new File("/sdcard/" + time + ".jpg");
 
         BufferedOutputStream bufferedOutputStream = null;
+
+        //final File file = new File(myDir, "/sdcard/" + time + ".jpg");
         try {
             bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(file));
             bmToSave.compress(Bitmap.CompressFormat.JPEG,
@@ -121,3 +131,5 @@ public class PicResultActivity extends AppCompatActivity {
         }
     }
 }
+
+

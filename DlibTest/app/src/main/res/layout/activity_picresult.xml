@@ -8,40 +8,12 @@
     tools:context=".PicResultActivity"
     android:orientation="vertical">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Capture Result"
-        android:gravity="center"
-        android:textSize="30sp"/>
+
     <ImageView
         android:id="@+id/pic"
         android:scaleType="center"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-    <com.example.dlibtest.AutoFitTextureView
-        android:id="@+id/textureView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"/>
-
-    <com.example.dlibtest.Box
-        android:id="@+id/BoxView"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_alignLeft="@+id/textureView"
-        android:layout_alignTop="@+id/textureView"
-        android:layout_alignRight="@+id/textureView"
-        android:layout_alignBottom="@+id/textureView"
-        android:layout_marginLeft="0dp"
-        android:layout_marginTop="0dp"
-        android:layout_marginRight="0dp"
-        android:layout_marginBottom="0dp"/>
-    </RelativeLayout>
 
 </LinearLayout>

@@ -26,7 +26,7 @@ public class ImageUtils {
     public static void saveBitmap(final Bitmap bitmap) {
         final String root =
                 Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "dlib";
-        Log.d(TAG,String.format("Saving %dx%d bitmap to %s.", bitmap.getWidth(), bitmap.getHeight(), root));
+        Log.i(TAG,String.format("Saving %dx%d bitmap to %s.", bitmap.getWidth(), bitmap.getHeight(), root));
         final File myDir = new File(root);
 
         if (!myDir.mkdirs()) {
@@ -41,6 +41,7 @@ public class ImageUtils {
         try {
             final FileOutputStream out = new FileOutputStream(file);
             bitmap.compress(Bitmap.CompressFormat.PNG, 99, out);
+            Log.i(TAG,"储存成果啦");
             out.flush();
             out.close();
         } catch (final Exception e) {
@@ -82,7 +83,7 @@ public class ImageUtils {
 
 
 
-   /*
+
     public static native void convertARGB8888ToYUV420SP(
             int[] input, byte[] output, int width, int height);
 
@@ -92,6 +93,6 @@ public class ImageUtils {
             byte[] input, byte[] output, int width, int height);
 
     public static native void convertRGB565ToYUV420SP(
-            byte[] input, byte[] output, int width, int height);*/
+            byte[] input, byte[] output, int width, int height);
             
 }

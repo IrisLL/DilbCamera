@@ -3,174 +3,86 @@
 //
 
 #include "rgb2yuv.h"
-#ifndef MAX
-#define MAX(a, b) ({__typeof__(a) _a = (a); __typeof__(b) _b = (b); _a > _b ? _a : _b; })
-#define MIN(a, b) ({__typeof__(a) _a = (a); __typeof__(b) _b = (b); _a < _b ? _a : _b; })
+namespace jnicommon {
+
+    static inline void WriteYUV(const int x, const int y, const int width,
+                                const int r8, const int g8, const int b8,
+                                uint8* const pY, uint8* const pUV) {
+        // Using formulas from http://msdn.microsoft.com/en-us/library/ms893078
+        *pY = ((66 * r8 + 129 * g8 + 25 * b8 + 128) >> 8) + 16;
+
+        // Odd widths get rounded up so that UV blocks on the side don't get cut off.
+        const int blocks_per_row = (width + 1) / 2;
+
+        // 2 bytes per UV block
+        const int offset = 2 * (((y / 2) * blocks_per_row + (x / 2)));
+
+        // U and V are the average values of all 4 pixels in the block.
+        if (!(x & 1) && !(y & 1)) {
+            // Explicitly clear the block if this is the first pixel in it.
+            pUV[offset] = 0;
+            pUV[offset + 1] = 0;
+        }
+
+// V (with divide by 4 factored in)
+#ifdef __APPLE__
+        const int u_offset = 0;
+  const int v_offset = 1;
+#else
+        const int u_offset = 1;
+        const int v_offset = 0;
 #endif
+        pUV[offset + v_offset] += ((112 * r8 - 94 * g8 - 18 * b8 + 128) >> 10) + 32;
 
-// This value is 2 ^ 18 - 1, and is used to clamp the RGB values before their ranges
-// are normalized to eight bits.
-static const int kMaxChannelValue = 262143;
+        // U (with divide by 4 factored in)
+        pUV[offset + u_offset] += ((-38 * r8 - 74 * g8 + 112 * b8 + 128) >> 10) + 32;
+    }
 
-static inline uint32_t YUV2RGB(int nY, int nU, int nV) {
-    nY -= 16;
-    nU -= 128;
-    nV -= 128;
-    if (nY < 0) nY = 0;
+    void ConvertARGB8888ToYUV420SP(const uint32* const input, uint8* const output,
+                                   int width, int height) {
+        uint8* pY = output;
+        uint8* pUV = output + (width * height);
+        const uint32* in = input;
 
-    // This is the floating point equivalent. We do the conversion in integer
-    // because some Android devices do not have floating point in hardware.
-    // nR = (int)(1.164 * nY + 2.018 * nU);
-    // nG = (int)(1.164 * nY - 0.813 * nV - 0.391 * nU);
-    // nB = (int)(1.164 * nY + 1.596 * nV);
-
-    int nR = 1192 * nY + 1634 * nV;
-    int nG = 1192 * nY - 833 * nV - 400 * nU;
-    int nB = 1192 * nY + 2066 * nU;
-
-    nR = MIN(kMaxChannelValue, MAX(0, nR));
-    nG = MIN(kMaxChannelValue, MAX(0, nG));
-    nB = MIN(kMaxChannelValue, MAX(0, nB));
-
-    nR = (nR >> 10) & 0xff;
-    nG = (nG >> 10) & 0xff;
-    nB = (nB >> 10) & 0xff;
-
-    return 0xff000000 | (nR << 16) | (nG << 8) | nB;
-}
-
-//  Accepts a YUV 4:2:0 image with a plane of 8 bit Y samples followed by
-//  separate u and v planes with arbitrary row and column strides,
-//  containing 8 bit 2x2 subsampled chroma samples.
-//  Converts to a packed ARGB 32 bit output of the same pixel dimensions.
-void ConvertYUV420ToARGB8888(const uint8_t* const yData,
-                             const uint8_t* const uData,
-                             const uint8_t* const vData, uint32_t* const output,
-                             const int width, const int height,
-                             const int y_row_stride, const int uv_row_stride,
-                             const int uv_pixel_stride) {
-    uint32_t* out = output;
-
-    for (int y = 0; y < height; y++) {
-        const uint8_t* pY = yData + y_row_stride * y;
-
-        const int uv_row_start = uv_row_stride * (y >> 1);
-        const uint8_t* pU = uData + uv_row_start;
-        const uint8_t* pV = vData + uv_row_start;
-
-        for (int x = 0; x < width; x++) {
-            const int uv_offset = (x >> 1) * uv_pixel_stride;
-            *out++ = YUV2RGB(pY[x], pU[uv_offset], pV[uv_offset]);
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                const uint32 rgb = *in++;
+#ifdef __APPLE__
+                const int nB = (rgb >> 8) & 0xFF;
+      const int nG = (rgb >> 16) & 0xFF;
+      const int nR = (rgb >> 24) & 0xFF;
+#else
+                const int nR = (rgb >> 16) & 0xFF;
+                const int nG = (rgb >> 8) & 0xFF;
+                const int nB = rgb & 0xFF;
+#endif
+                WriteYUV(x, y, width, nR, nG, nB, pY++, pUV);
+            }
         }
     }
-}
 
-//  Accepts a YUV 4:2:0 image with a plane of 8 bit Y samples followed by an
-//  interleaved U/V plane containing 8 bit 2x2 subsampled chroma samples,
-//  except the interleave order of U and V is reversed. Converts to a packed
-//  ARGB 32 bit output of the same pixel dimensions.
-void ConvertYUV420SPToARGB8888(const uint8_t* const yData,
-                               const uint8_t* const uvData,
-                               uint32_t* const output, const int width,
-                               const int height) {
-    const uint8_t* pY = yData;
-    const uint8_t* pUV = uvData;
-    uint32_t* out = output;
+    void ConvertRGB565ToYUV420SP(const uint16* const input, uint8* const output,
+                                 const int width, const int height) {
+        uint8* pY = output;
+        uint8* pUV = output + (width * height);
+        const uint16* in = input;
 
-    for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
-            int nY = *pY++;
-            int offset = (y >> 1) * width + 2 * (x >> 1);
-#ifdef __APPLE__
-            int nU = pUV[offset];
-      int nV = pUV[offset + 1];
-#else
-            int nV = pUV[offset];
-            int nU = pUV[offset + 1];
-#endif
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                const uint32 rgb = *in++;
 
-            *out++ = YUV2RGB(nY, nU, nV);
-        }
-    }
-}
+                const int r5 = ((rgb >> 11) & 0x1F);
+                const int g6 = ((rgb >> 5) & 0x3F);
+                const int b5 = (rgb & 0x1F);
 
-// The same as above, but downsamples each dimension to half size.
-void ConvertYUV420SPToARGB8888HalfSize(const uint8_t* const input,
-                                       uint32_t* const output, int width,
-                                       int height) {
-    const uint8_t* pY = input;
-    const uint8_t* pUV = input + (width * height);
-    uint32_t* out = output;
-    int stride = width;
-    width >>= 1;
-    height >>= 1;
+                // Shift left, then fill in the empty low bits with a copy of the high
+                // bits so we can stretch across the entire 0 - 255 range.
+                const int r8 = r5 << 3 | r5 >> 2;
+                const int g8 = g6 << 2 | g6 >> 4;
+                const int b8 = b5 << 3 | b5 >> 2;
 
-    for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
-            int nY = (pY[0] + pY[1] + pY[stride] + pY[stride + 1]) >> 2;
-            pY += 2;
-#ifdef __APPLE__
-            int nU = *pUV++;
-      int nV = *pUV++;
-#else
-            int nV = *pUV++;
-            int nU = *pUV++;
-#endif
-
-            *out++ = YUV2RGB(nY, nU, nV);
-        }
-        pY += stride;
-    }
-}
-
-//  Accepts a YUV 4:2:0 image with a plane of 8 bit Y samples followed by an
-//  interleaved U/V plane containing 8 bit 2x2 subsampled chroma samples,
-//  except the interleave order of U and V is reversed. Converts to a packed
-//  RGB 565 bit output of the same pixel dimensions.
-void ConvertYUV420SPToRGB565(const uint8_t* const input, uint16_t* const output,
-                             const int width, const int height) {
-    const uint8_t* pY = input;
-    const uint8_t* pUV = input + (width * height);
-    uint16_t* out = output;
-
-    for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
-            int nY = *pY++;
-            int offset = (y >> 1) * width + 2 * (x >> 1);
-#ifdef __APPLE__
-            int nU = pUV[offset];
-      int nV = pUV[offset + 1];
-#else
-            int nV = pUV[offset];
-            int nU = pUV[offset + 1];
-#endif
-
-            nY -= 16;
-            nU -= 128;
-            nV -= 128;
-            if (nY < 0) nY = 0;
-
-            // This is the floating point equivalent. We do the conversion in integer
-            // because some Android devices do not have floating point in hardware.
-            // nR = (int)(1.164 * nY + 2.018 * nU);
-            // nG = (int)(1.164 * nY - 0.813 * nV - 0.391 * nU);
-            // nB = (int)(1.164 * nY + 1.596 * nV);
-
-            int nR = 1192 * nY + 1634 * nV;
-            int nG = 1192 * nY - 833 * nV - 400 * nU;
-            int nB = 1192 * nY + 2066 * nU;
-
-            nR = MIN(kMaxChannelValue, MAX(0, nR));
-            nG = MIN(kMaxChannelValue, MAX(0, nG));
-            nB = MIN(kMaxChannelValue, MAX(0, nB));
-
-            // Shift more than for ARGB8888 and apply appropriate bitmask.
-            nR = (nR >> 13) & 0x1f;
-            nG = (nG >> 12) & 0x3f;
-            nB = (nB >> 13) & 0x1f;
-
-            // R is high 5 bits, G is middle 6 bits, and B is low 5 bits.
-            *out++ = (nR << 11) | (nG << 5) | nB;
+                WriteYUV(x, y, width, r8, g8, b8, pY++, pUV);
+            }
         }
     }
 }

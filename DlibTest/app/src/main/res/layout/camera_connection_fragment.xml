@@ -1,18 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<android.support.design.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <com.example.dlibtest.AutoFitTextureView
         android:id="@+id/texture"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
-    <com.example.dlibtest.TransparentTitleView
-        android:id="@+id/results"
         android:layout_width="match_parent"
-        android:layout_height="112dp"
-        android:layout_alignParentTop="true" />
+        android:layout_height="match_parent" />
 
-</RelativeLayout>
+
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/capture"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal|bottom"
+        android:layout_margin="@dimen/activity_horizontal_margin"
+        android:onClick="capture"
+        android:src="@drawable/ic_camera_alt_black_36dp"/>
+
+</android.support.design.widget.CoordinatorLayout>

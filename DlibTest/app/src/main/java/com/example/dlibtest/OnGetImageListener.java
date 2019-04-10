@@ -1,11 +1,13 @@
 package com.example.dlibtest;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Point;
@@ -17,6 +19,7 @@ import android.os.Trace;
 import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import com.example.dlibtest.Dlib.Constants;
 import com.example.dlibtest.Dlib.FaceDet;
@@ -24,8 +27,15 @@ import com.example.dlibtest.Dlib.VisionDetRet;
 
 import junit.framework.Assert;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -33,9 +43,12 @@ import java.util.List;
  */
 public class OnGetImageListener implements ImageReader.OnImageAvailableListener {
 
+
     private static final boolean SAVE_PREVIEW_BITMAP = false;
 
+
     private static final int INPUT_SIZE = 224;
+
     private static final String TAG = "OnGetImageListener";
 
     private int mScreenRotation = 90;
@@ -52,7 +65,7 @@ public class OnGetImageListener implements ImageReader.OnImageAvailableListener 
 
     private Context mContext;
     private FaceDet mFaceDet;
-    private TransparentTitleView mTransparentTitleView;
+   // private TransparentTitleView mTransparentTitleView;
     private FloatingCameraWindow mWindow;
     private Paint mFaceLandmardkPaint;
 
@@ -60,17 +73,17 @@ public class OnGetImageListener implements ImageReader.OnImageAvailableListener 
     public void initialize(
             final Context context,
             final AssetManager assetManager,
-            final TransparentTitleView scoreView,
+           // final TransparentTitleView scoreView,
             final Handler handler) {
         this.mContext = context;
-        this.mTransparentTitleView = scoreView;
+        //this.mTransparentTitleView = scoreView;
         this.mInferenceHandler = handler;
         mFaceDet = new FaceDet(Constants.getFaceShapeModelPath());
         mWindow = new FloatingCameraWindow(mContext);
 
         mFaceLandmardkPaint = new Paint();
         mFaceLandmardkPaint.setColor(Color.GREEN);
-        mFaceLandmardkPaint.setStrokeWidth(2);
+        mFaceLandmardkPaint.setStrokeWidth(1);
         mFaceLandmardkPaint.setStyle(Paint.Style.STROKE);
     }
 
@@ -147,8 +160,8 @@ public class OnGetImageListener implements ImageReader.OnImageAvailableListener 
             mIsComputing = true;
             Log.i(TAG, "ImageAvailabl有图片(＾－＾)V");
             Trace.beginSection("imageAvailable");
-
-                final Image.Plane[] planes = image.getPlanes();
+            //获取该图片的像素矩阵
+            final Image.Plane[] planes = image.getPlanes();
 
                // Log.i(TAG,"width"+String.valueOf(image.getWidth())+"height"+String.valueOf(image.getHeight()));
               // Log.i(TAG,"mPreviewWidth"+String.valueOf(mPreviewWdith)+"  "+"mPreviewHeight"+String.valueOf(mPreviewHeight));
@@ -164,6 +177,7 @@ public class OnGetImageListener implements ImageReader.OnImageAvailableListener 
                     mRGBBytes = new int[mPreviewWdith * mPreviewHeight];
                     mRGBframeBitmap = Bitmap.createBitmap(mPreviewWdith, mPreviewHeight, Bitmap.Config.ARGB_8888);
                     mCroppedBitmap = Bitmap.createBitmap(INPUT_SIZE, INPUT_SIZE, Bitmap.Config.ARGB_8888);
+
 
                     mYUVBytes = new byte[planes.length][];
                     for (int i = 0; i < planes.length; ++i) {
@@ -204,10 +218,12 @@ public class OnGetImageListener implements ImageReader.OnImageAvailableListener 
         mRGBframeBitmap.setPixels(mRGBBytes, 0, mPreviewWdith, 0, 0, mPreviewWdith, mPreviewHeight);
         drawResizedBitmap(mRGBframeBitmap, mCroppedBitmap);
 
+
         if (SAVE_PREVIEW_BITMAP) {
-            ImageUtils.saveBitmap(mCroppedBitmap);
+           ImageUtils.saveBitmap(mCroppedBitmap);
             Log.i(TAG,"mCroppedBitmap保存成功");
         }
+        else Log.i(TAG,"mCroppedBitmap保存失败");
 
         mInferenceHandler.post(
                 new Runnable() {
@@ -215,7 +231,7 @@ public class OnGetImageListener implements ImageReader.OnImageAvailableListener 
                     public void run() {
                         Log.i(TAG,"我执行到Runnable啦！");
                             if (!new File(Constants.getFaceShapeModelPath()).exists()) {
-                                mTransparentTitleView.setText("Copying landmark model to " + Constants.getFaceShapeModelPath());
+                               // mTransparentTitleView.setText("Copying landmark model to " + Constants.getFaceShapeModelPath());
                                 Log.i(TAG,"copyFaceShape68ModelFile "+ Constants.getFaceShapeModelPath()+"正常");
                                 FileUtils.copyFileFromRawToOthers(mContext, R.raw.shape_predictor_68_face_landmarks, Constants.getFaceShapeModelPath());
                             }
@@ -229,7 +245,7 @@ public class OnGetImageListener implements ImageReader.OnImageAvailableListener 
                             results = mFaceDet.detect(mCroppedBitmap);
                         }
                         long endTime = System.currentTimeMillis();
-                        mTransparentTitleView.setText("Time cost: " + String.valueOf((endTime - startTime) / 1000f) + " sec");
+                       // mTransparentTitleView.setText("Time cost: " + String.valueOf((endTime - startTime) / 1000f) + " sec");
                         // Draw on bitmap
                         if (results != null) {
                             for (final VisionDetRet ret : results) {
@@ -248,7 +264,7 @@ public class OnGetImageListener implements ImageReader.OnImageAvailableListener 
                                 for (Point point : landmarks) {
                                     int pointX = (int) (point.x * resizeRatio);
                                     int pointY = (int) (point.y * resizeRatio);
-                                    canvas.drawCircle(pointX, pointY, 2, mFaceLandmardkPaint);
+                                    canvas.drawCircle(pointX, pointY, 1, mFaceLandmardkPaint);
                                 }
                             }
                         }
@@ -260,4 +276,6 @@ public class OnGetImageListener implements ImageReader.OnImageAvailableListener 
 
         Trace.endSection();
     }
+
+
 }

@@ -3,6 +3,8 @@
 //
 
 #include "bitmap2mat.h"
+#include "logging.h"
+
 namespace jniutils {
 
     using namespace cv;
@@ -22,7 +24,7 @@ namespace jniutils {
             dst.create(info.height, info.width, CV_8UC4);
 
             if (info.format == ANDROID_BITMAP_FORMAT_RGBA_8888) {
-                //   LOG(INFO) << "nBitmapToMat: RGBA_8888 -> CV_8UC4";
+                   LOG(INFO) << "nBitmapToMat: RGBA_8888 -> CV_8UC4";
                 Mat tmp(info.height, info.width, CV_8UC4, pixels);
 
                 if (needUnPremultiplyAlpha)
@@ -31,7 +33,7 @@ namespace jniutils {
                     tmp.copyTo(dst);
 
             } else {
-                //   LOG(INFO) << "nBitmapToMat: RGB_565 -> CV_8UC4";
+                  LOG(INFO) << "nBitmapToMat: RGB_565 -> CV_8UC4";
                 Mat tmp(info.height, info.width, CV_8UC2, pixels);
                 cvtColor(tmp, dst, COLOR_BGR5652RGBA);
             }

@@ -7,11 +7,11 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     tools:context=".MainActivity"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="@drawable/mainbc">
 
 
-
-    <include layout="@layout/content_main"/>
+    <include layout="@layout/content_main" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
@@ -19,7 +19,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/activity_horizontal_margin"
-        android:src="@drawable/gallery"/>
+        android:src="@drawable/gallery"
+        app:backgroundTint="@android:color/holo_orange_dark" />
 
 
     <android.support.design.widget.FloatingActionButton
@@ -28,7 +29,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|start"
         android:layout_margin="@dimen/activity_horizontal_margin"
-        android:src="@drawable/ic_camera_alt_black_36dp"/>
+        android:src="@drawable/ic_camera_alt_black_36dp"
+        app:backgroundTint="@android:color/holo_orange_dark" />
 
 
 

@@ -262,3 +262,58 @@ Java_com_example_dlibtest_ImageUtils_convertYUV420SPToARGB8888(JNIEnv *env, jcla
 
 ////////////////////////
 
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_dlibtest_ImageUtils_convertARGB8888ToYUV420SP(JNIEnv* env, jclass clazz,
+                                                               jintArray input,
+                                                               jbyteArray output, jint width,
+                                                               jint height) {
+jboolean inputCopy = JNI_FALSE;
+jint* const i = env->GetIntArrayElements(input, &inputCopy);
+
+jboolean outputCopy = JNI_FALSE;
+jbyte* const o = env->GetByteArrayElements(output, &outputCopy);
+
+jnicommon::ConvertARGB8888ToYUV420SP(reinterpret_cast<uint32*>(i),
+reinterpret_cast<uint8*>(o), width, height);
+
+env->ReleaseIntArrayElements(input, i, JNI_ABORT);
+env->ReleaseByteArrayElements(output, o, 0);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_dlibtest_ImageUtils_convertYUV420SPToRGB565(JNIEnv* env, jclass clazz,
+                                                             jbyteArray input,
+                                                             jbyteArray output, jint width,
+                                                             jint height) {
+    jboolean inputCopy = JNI_FALSE;
+    jbyte* const i = env->GetByteArrayElements(input, &inputCopy);
+
+    jboolean outputCopy = JNI_FALSE;
+    jbyte* const o = env->GetByteArrayElements(output, &outputCopy);
+
+    ConvertYUV420SPToRGB565(reinterpret_cast<uint8*>(i),
+                            reinterpret_cast<uint16*>(o), width, height);
+
+    env->ReleaseByteArrayElements(input, i, JNI_ABORT);
+    env->ReleaseByteArrayElements(output, o, 0);
+}extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_dlibtest_ImageUtils_convertRGB565ToYUV420SP(JNIEnv* env, jclass clazz,
+                                                             jbyteArray input,
+                                                             jbyteArray output, jint width,
+                                                             jint height) {
+    jboolean inputCopy = JNI_FALSE;
+    jbyte* const i = env->GetByteArrayElements(input, &inputCopy);
+
+    jboolean outputCopy = JNI_FALSE;
+    jbyte* const o = env->GetByteArrayElements(output, &outputCopy);
+
+    jnicommon::ConvertRGB565ToYUV420SP(reinterpret_cast<uint16*>(i),
+                            reinterpret_cast<uint8*>(o), width, height);
+
+    env->ReleaseByteArrayElements(input, i, JNI_ABORT);
+    env->ReleaseByteArrayElements(output, o, 0);
+}
+

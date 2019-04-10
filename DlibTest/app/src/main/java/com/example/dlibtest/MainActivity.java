@@ -100,7 +100,8 @@ public class MainActivity extends AppCompatActivity {
 
     private String mTestImgPath;
     private FaceDet mFaceDet;
-    private PedestrianDet mPersonDet;
+    //private PedestrianDet mPersonDet;
+    private FaceDet mPersonDet;
     private List<Card> mCard = new ArrayList<>();
 
     @Override
@@ -282,7 +283,8 @@ public class MainActivity extends AppCompatActivity {
             protected List<VisionDetRet> doInBackground(Void... voids) {
                 // Init
                 if (mPersonDet == null) {
-                    mPersonDet = new PedestrianDet();
+                    //mPersonDet = new PedestrianDet();
+                    mPersonDet = new FaceDet();
                 }
 
                //Timber.tag(TAG).d("Image path: " + imgPath);
