@@ -1,4 +1,4 @@
-package com.example.dlibtest;
+package com.example.dlibtest.start;
 
 
 import android.content.Context;
@@ -10,6 +10,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import com.example.dlibtest.R;
+
 import org.litepal.crud.DataSupport;
 import java.util.List;
 

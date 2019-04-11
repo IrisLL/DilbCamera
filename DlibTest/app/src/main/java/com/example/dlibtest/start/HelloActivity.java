@@ -1,8 +1,11 @@
-package com.example.dlibtest;
+package com.example.dlibtest.start;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+
+import com.example.dlibtest.start.LoginActivity;
+import com.example.dlibtest.R;
 
 public class HelloActivity extends AppCompatActivity {
 

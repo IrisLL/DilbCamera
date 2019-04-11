@@ -1,4 +1,4 @@
-package com.example.dlibtest;
+package com.example.dlibtest.start;
 import org.litepal.crud.DataSupport;
 
 public class UserPasspord extends DataSupport{

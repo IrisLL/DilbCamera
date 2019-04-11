@@ -8,7 +8,7 @@
     android:fitsSystemWindows="true"
     tools:context=".MainActivity"
     android:orientation="vertical"
-    android:background="@drawable/mainbc">
+    android:background="@drawable/mainbc1">
 
 
     <include layout="@layout/content_main" />
@@ -20,7 +20,8 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/activity_horizontal_margin"
         android:src="@drawable/gallery"
-        app:backgroundTint="@android:color/holo_orange_dark" />
+        app:backgroundTint="@android:color/holo_orange_dark"
+        app:fabCustomSize="@dimen/activity_horizontal_margin" />
 
 
     <android.support.design.widget.FloatingActionButton
@@ -30,7 +31,8 @@
         android:layout_gravity="bottom|start"
         android:layout_margin="@dimen/activity_horizontal_margin"
         android:src="@drawable/ic_camera_alt_black_36dp"
-        app:backgroundTint="@android:color/holo_orange_dark" />
+        app:backgroundTint="@android:color/holo_orange_dark"
+        app:fabCustomSize="@dimen/activity_horizontal_margin" />
 
 
 

@@ -1,4 +1,4 @@
-package com.example.dlibtest;
+package com.example.dlibtest.start;
 
 import android.content.Context;
 import android.content.Intent;
@@ -13,6 +13,10 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import com.example.dlibtest.MainActivity;
+import com.example.dlibtest.R;
+import com.example.dlibtest.start.RegisterActivity;
 
 import org.litepal.crud.DataSupport;
 
