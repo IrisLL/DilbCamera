@@ -54,4 +54,5 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     implementation 'com.github.dexafree:materiallist:3.0.1'
     implementation 'org.litepal.android:core:1.6.1'
+    implementation project(path: ':openCVLibrary345')
 }

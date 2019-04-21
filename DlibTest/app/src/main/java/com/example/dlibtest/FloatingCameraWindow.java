@@ -2,7 +2,9 @@ package com.example.dlibtest;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.PixelFormat;
 import android.graphics.Point;
+import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -17,6 +19,8 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.example.dlibtest.SphereView.GlRenderer;
 
 import java.lang.ref.WeakReference;
 
@@ -41,6 +45,10 @@ public class FloatingCameraWindow {
 
     private static final boolean DEBUG = true;
 
+    GLSurfaceView mGlSurfaceView;
+    GlRenderer renderer;
+
+
     public FloatingCameraWindow(Context context) {
         mContext = context;
         mUIHandler = new Handler(Looper.getMainLooper());
@@ -57,8 +65,10 @@ public class FloatingCameraWindow {
             mScreenMaxHeight = display.getHeight();
         }
         // Default window size
-       mWindowWidth = mScreenMaxWidth / 2;
-       mWindowHeight = mScreenMaxHeight / 2;
+       //mWindowWidth = mScreenMaxWidth / 2;
+       //mWindowHeight = mScreenMaxHeight / 2;
+        mWindowWidth = mScreenMaxWidth;
+        mWindowHeight = mScreenMaxHeight;
 
         Log.i(TAG,"window height:"+String.valueOf(mWindowHeight));
         Log.i(TAG,"window width:"+String.valueOf(mWindowWidth));
@@ -100,6 +110,7 @@ public class FloatingCameraWindow {
             }
         });
     }
+
 
     public void release() {
         mUIHandler.postAtFrontOfQueue(new Runnable() {
@@ -154,6 +165,19 @@ public class FloatingCameraWindow {
         });
     }
 
+    public  void rotateOrb(double x, double y, double z) {
+        renderer.setMaskRotation(x, y, z);
+    }
+
+    public void scaleOrb(double x, double y, double z) {
+        renderer.setMaskScale(x, y, z);
+    }
+
+    public void translateOrb(android.graphics.Rect rect){
+        renderer.updateOrbRect(rect);
+
+    }
+
     public void setMoreInformation(final String info) {
         checkInit();
         mUIHandler.post(new Runnable() {
@@ -199,6 +223,16 @@ public class FloatingCameraWindow {
             });
 
             View floatView = mLayoutInflater.inflate(R.layout.camera_window_view, body, true);
+
+            mGlSurfaceView = new GLSurfaceView(floatView.getContext());
+            mGlSurfaceView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
+            mGlSurfaceView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
+            renderer = new GlRenderer(floatView.getContext());
+
+            mGlSurfaceView.setRenderer(renderer);
+            mGlSurfaceView.setZOrderOnTop(true);
+            body.addView(mGlSurfaceView);
+
             mColorView = (ImageView) findViewById(R.id.imageView_c);
             mFPSText = (TextView) findViewById(R.id.fps_textview);
             mInfoText = (TextView) findViewById(R.id.info_textview);
@@ -210,6 +244,8 @@ public class FloatingCameraWindow {
 
             mColorView.getLayoutParams().width = colorMaxWidth;
             mColorView.getLayoutParams().height = colorMaxHeight;
+
+
         }
 
         @Override

@@ -27,6 +27,8 @@ import com.example.dlibtest.Dlib.VisionDetRet;
 
 import junit.framework.Assert;
 
+import org.opencv.android.OpenCVLoader;
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -35,8 +37,11 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Class that takes in preview frames and converts the image to Bitmaps to process with dlib lib.
@@ -68,6 +73,16 @@ public class OnGetImageListener implements ImageReader.OnImageAvailableListener 
    // private TransparentTitleView mTransparentTitleView;
     private FloatingCameraWindow mWindow;
     private Paint mFaceLandmardkPaint;
+
+    //添加姿态检测
+    private PoseDetection poseDetection = new PoseDetection();
+
+    static {
+        if (OpenCVLoader.initDebug()) {
+        }
+        else {
+        }
+    }
 
 
     public void initialize(
@@ -246,6 +261,34 @@ public class OnGetImageListener implements ImageReader.OnImageAvailableListener 
                         }
                         long endTime = System.currentTimeMillis();
                        // mTransparentTitleView.setText("Time cost: " + String.valueOf((endTime - startTime) / 1000f) + " sec");
+
+
+
+
+
+                        //add headpose
+                        Paint featuresPaint = new Paint();
+                        featuresPaint.setColor(Color.CYAN);
+                        featuresPaint.setStrokeWidth(1);
+                        featuresPaint.setStyle(Paint.Style.STROKE);
+                        // Loop result list
+                        final Set<Integer> key_points = new HashSet<Integer>(Arrays.asList(
+                                new Integer[] {
+                                        //11, //chin
+                                        17, //jaw
+                                        22, //right brow
+                                        27, //left_brow
+                                        31, //nose bridge
+                                        36, //nose bottom
+                                        42, //right eye
+                                        48, //left eye
+                                        60, // mouth outer
+                                        68 //mouth inner
+
+                                }
+                        ));
+
+
                         // Draw on bitmap
                         if (results != null) {
                             for (final VisionDetRet ret : results) {
@@ -259,14 +302,71 @@ public class OnGetImageListener implements ImageReader.OnImageAvailableListener 
                                 Log.i(TAG,"画布大小：w"+String.valueOf(canvas.getWidth())+"  h"+String.valueOf(canvas.getHeight()));
                                 canvas.drawRect(bounds, mFaceLandmardkPaint);
 
+                                mWindow.translateOrb(bounds);
+
                                 // Draw landmark
                                 ArrayList<Point> landmarks = ret.getFaceLandmarks();
-                                for (Point point : landmarks) {
+                                /*for (Point point : landmarks) {
                                     int pointX = (int) (point.x * resizeRatio);
                                     int pointY = (int) (point.y * resizeRatio);
                                     canvas.drawCircle(pointX, pointY, 1, mFaceLandmardkPaint);
+                                }*/
+
+
+                                for (int p = 0 ;  p < 68 -1 ; p++) {
+                                    if ( ! key_points.contains(p + 1) ) {
+                                        int pointXS = (int) (landmarks.get(p).x * resizeRatio);
+                                        int pointYS = (int) (landmarks.get(p).y * resizeRatio);
+                                        int pointXF = (int) (landmarks.get(p+1).x * resizeRatio);
+                                        int pointYF = (int) (landmarks.get(p+1).y * resizeRatio);
+                                        canvas.drawLine(pointXS, pointYS, pointXF, pointYF, featuresPaint);
+                                    }
+
                                 }
+                                canvas.drawCircle(landmarks.get(33).x, landmarks.get(33).y, 3, mFaceLandmardkPaint);
+
                             }
+
+                            //add
+                            if(results.size() > 0) {
+
+                                long beforePose = System.currentTimeMillis();
+
+                                double[] rotationRads = poseDetection.estimatePose(results.get(0), mCroppedBitmap);
+                                long aftrePOse = System.currentTimeMillis();
+
+                                mWindow.rotateOrb(rotationRads[0], rotationRads[1], rotationRads[2]);
+
+                                //window width =
+                                float widthWindow = mCroppedBitmap.getWidth();
+                                //scale = 1 is half the width
+                                //left checkbone ..
+
+                                Point ear_r = results.get(0).getFaceLandmarks().get(0);
+                                Point ear_l = results.get(0).getFaceLandmarks().get(16);
+
+                                double faceWidth =
+                                        Math.sqrt(
+                                                Math.pow((ear_l.x - ear_r.x), 2.0f)
+                                                        + Math.pow((ear_l.y - ear_r.y), 2) );
+
+                                //At 1 facewidth is 1 / 4 of the screen
+                                double faceWidthScale =  faceWidth / (widthWindow / 2.0f ) ;
+
+                                Point noseTip = results.get(0).getFaceLandmarks().get(33);
+                                Point chin = results.get(0).getFaceLandmarks().get(8);
+                                double faceHeight =
+                                        Math.sqrt(
+                                                Math.pow((noseTip.x - chin.x), 2.0f)
+                                                        + Math.pow((noseTip.y - chin.y), 2) );
+
+
+                                faceHeight = faceHeight * 2;
+
+
+                                mWindow.scaleOrb(faceWidthScale * 1.20f, faceHeight * 1.20f, 1.0f );
+                            }
+
                         }
 
                         mWindow.setRGBBitmap(mCroppedBitmap);
