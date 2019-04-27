@@ -1,25 +1,16 @@
 package com.example.dlibtest.SphereView;
 
 import android.content.Context;
-import android.opengl.GLSurfaceView.Renderer;
+import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
-import android.util.Log;
 import android.view.MotionEvent;
-
 
 import com.example.dlibtest.R;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-
-/**
- * Simple class to render an object in a suitable view port.
- *
- * @author Jim Cornmell
- * @since July 2013
- */
-public class GlRenderer implements Renderer {
+public class GIRenderer  implements GLSurfaceView.Renderer {
     /** Factors to rotate sphere. */
     private static final float FACTOR_ROTATION_LONGITUDE = 100.0f;
     private static final float FACTOR_ROTATION_LATITUDE = 100.0f;
@@ -30,7 +21,7 @@ public class GlRenderer implements Renderer {
     private static final float SPHERE_SCALE_MIN = 0.5f;
 
     /** Object distance on the screen. */
-    private static final float OBJECT_DISTANCE = -10.0f;
+    private static final float OBJECT_DISTANCE = -15.0f;
 
     /** Clear colour, alpha component. */
     private static final float CLEAR_RED = 0.0f;
@@ -53,6 +44,7 @@ public class GlRenderer implements Renderer {
     /** Perspective setup, far component. */
     private static final float Z_FAR = 100.0f;
 
+
     /** The earth's sphere. */
     private final Sphere mEarth;
 
@@ -70,6 +62,23 @@ public class GlRenderer implements Renderer {
     /** Scaling of the sphere. */
     private float width, height;
 
+    //适配不同的预览角度
+    private int previewHeight;
+    private int previewWidth;
+    private int halfHeight;
+    private int halfWeight;
+
+
+    public void PriviewH(int height)
+    {
+        previewHeight=height;
+        halfHeight=height/2;
+    }
+    public void PriviewW(int width)
+    {
+        previewWidth=width;
+        halfWeight=width/2;
+    }
 
     // Sphere coordinates
     private android.graphics.Rect orbRect;
@@ -101,7 +110,6 @@ public class GlRenderer implements Renderer {
         mZAxistiltAngle = updateAngle(mZAxistiltAngle, (float)-rz * 57.0f);
 
     }
-
     private float updateAngle(float angle, float newAngle) {
 
 
@@ -128,13 +136,11 @@ public class GlRenderer implements Renderer {
     public void updateOrbRect(android.graphics.Rect rect) {
         this.orbRect = rect;
     }
-
-
     /**
      * Constructor to set the handed over context.
      * @param context The context.
      */
-    public GlRenderer(final Context context) {
+    public GIRenderer(final Context context) {
         this.mContext = context;
         this.mEarth = new Sphere(3, 2);
         this.mRotationAngle = 0.0f;
@@ -144,7 +150,6 @@ public class GlRenderer implements Renderer {
         orbRect = new android.graphics.Rect();
         orbRect.set(0, 1, 0, 1);
     }
-
     @Override
     public void onDrawFrame(final GL10 gl) {
         //gl.glClearColor(0.5f, 0.5f, 0.5f, 0.0f);
@@ -155,22 +160,22 @@ public class GlRenderer implements Renderer {
 
         //Update position with translation
 
-        gl.glTranslatef(((float)orbRect.centerX() - 112) / 224 * 6.0f,
-                (-(((float)orbRect.centerY() - 112)) / 224) * 6.0f, 0);
+       // gl.glTranslatef(((float)orbRect.centerX() - 112) / 224 * 6.0f, (-(((float)orbRect.centerY() - 112)) / 224) * 6.0f, 0);
 
+        gl.glTranslatef(((float)orbRect.centerX() - halfHeight) / previewHeight * 6.0f,
+                (-(((float)orbRect.centerY() - halfWeight)) / previewWidth) * 6.0f, 0);
         //gl.glScalef(mSphereScaleX, mSphereScaleY, mSphereScaleZ);
 
-        
+
         gl.glRotatef(this.mAxialTiltAngle, 1, 0, 0);
         gl.glRotatef(this.mRotationAngle, 0, 1, 0);
         gl.glRotatef(this.mZAxistiltAngle, 0, 0, 1);
 
 
         this.mEarth.draw(gl);
-        gl.glTranslatef(( -((float)orbRect.centerX() - 112) ), 0.0f, 0);
+      //  gl.glTranslatef(( -((float)orbRect.centerX() - halfWeight) ), 0.0f, 0);
 
     }
-
     @Override
     public void onSurfaceChanged(final GL10 gl, final int width, final int height) {
         final float aspectRatio = (float) width / (float) (height == 0 ? 1 : height);
@@ -186,10 +191,9 @@ public class GlRenderer implements Renderer {
         gl.glLoadIdentity();
 
     }
-
     @Override
     public void onSurfaceCreated(final GL10 gl, final EGLConfig config) {
-        this.mEarth.loadGLTexture(gl, this.mContext, R.raw.carnival_mask);
+        this.mEarth.loadGLTexture(gl, this.mContext, R.raw.dog);
         gl.glEnable(GL10.GL_TEXTURE_2D);
         //gl.glEnable(GL10.GL_CULL_FACE); //test ?;
         gl.glShadeModel(GL10.GL_SMOOTH);
@@ -201,4 +205,5 @@ public class GlRenderer implements Renderer {
         gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_NICEST);
 
     }
+
 }

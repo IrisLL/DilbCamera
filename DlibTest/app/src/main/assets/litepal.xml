@@ -5,6 +5,6 @@
     <version value="1" ></version>
 
     <list>
-        <mapping class="com.example.dlibtest.UserPasspord"></mapping>
+        <mapping class="com.example.dlibtest.start.UserPasspord"></mapping>
     </list>
 </litepal>

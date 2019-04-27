@@ -70,7 +70,7 @@ public class OnGetImageListener implements ImageReader.OnImageAvailableListener 
 
     private Context mContext;
     private FaceDet mFaceDet;
-   // private TransparentTitleView mTransparentTitleView;
+    // private TransparentTitleView mTransparentTitleView;
     private FloatingCameraWindow mWindow;
     private Paint mFaceLandmardkPaint;
 
@@ -88,7 +88,7 @@ public class OnGetImageListener implements ImageReader.OnImageAvailableListener 
     public void initialize(
             final Context context,
             final AssetManager assetManager,
-           // final TransparentTitleView scoreView,
+            // final TransparentTitleView scoreView,
             final Handler handler) {
         this.mContext = context;
         //this.mTransparentTitleView = scoreView;
@@ -132,18 +132,20 @@ public class OnGetImageListener implements ImageReader.OnImageAvailableListener 
             mScreenRotation = 0;
         }
 
-        Assert.assertEquals(dst.getWidth(), dst.getHeight());
-        final float minDim = Math.min(src.getWidth(), src.getHeight());
+      //  Assert.assertEquals(dst.getWidth(), dst.getHeight());
+      //  final float minDim = Math.min(src.getWidth(), src.getHeight());
 
         final Matrix matrix = new Matrix();
 
         // We only want the center square out of the original rectangle.
-        final float translateX = -Math.max(0, (src.getWidth() - minDim) / 2);
-        final float translateY = -Math.max(0, (src.getHeight() - minDim) / 2);
+       // final float translateX = -Math.max(0, (src.getWidth() - minDim) / 2);
+       // final float translateY = -Math.max(0, (src.getHeight() - minDim) / 2);
+        final float translateX = -Math.max(0, src.getWidth()/ 2);
+         final float translateY = -Math.max(0, src.getHeight() / 2);
         matrix.preTranslate(translateX, translateY);
 
-        final float scaleFactor = dst.getHeight() / minDim;
-        matrix.postScale(scaleFactor, scaleFactor);
+       // final float scaleFactor = dst.getHeight() / minDim;
+       // matrix.postScale(scaleFactor, scaleFactor);
 
         // Rotate around the center if necessary.
         if (mScreenRotation != 0) {
@@ -178,64 +180,66 @@ public class OnGetImageListener implements ImageReader.OnImageAvailableListener 
             //获取该图片的像素矩阵
             final Image.Plane[] planes = image.getPlanes();
 
-               // Log.i(TAG,"width"+String.valueOf(image.getWidth())+"height"+String.valueOf(image.getHeight()));
-              // Log.i(TAG,"mPreviewWidth"+String.valueOf(mPreviewWdith)+"  "+"mPreviewHeight"+String.valueOf(mPreviewHeight));
+            // Log.i(TAG,"width"+String.valueOf(image.getWidth())+"height"+String.valueOf(image.getHeight()));
+            // Log.i(TAG,"mPreviewWidth"+String.valueOf(mPreviewWdith)+"  "+"mPreviewHeight"+String.valueOf(mPreviewHeight));
 
 
 
-                // Initialize the storage bitmaps once when the resolution is known.
-                if (mPreviewWdith != image.getWidth() || mPreviewHeight != image.getHeight()) {
-                    mPreviewWdith = image.getWidth();
-                    mPreviewHeight = image.getHeight();
+            // Initialize the storage bitmaps once when the resolution is known.
+            if (mPreviewWdith != image.getWidth() || mPreviewHeight != image.getHeight()) {
+                mPreviewWdith = image.getWidth();
+                mPreviewHeight = image.getHeight();
 
-                    Log.i(TAG, String.format("Initializing at size %dx%d", mPreviewWdith, mPreviewHeight));
-                    mRGBBytes = new int[mPreviewWdith * mPreviewHeight];
-                    mRGBframeBitmap = Bitmap.createBitmap(mPreviewWdith, mPreviewHeight, Bitmap.Config.ARGB_8888);
-                    mCroppedBitmap = Bitmap.createBitmap(INPUT_SIZE, INPUT_SIZE, Bitmap.Config.ARGB_8888);
+                Log.i(TAG, String.format("Initializing at size %dx%d", mPreviewWdith, mPreviewHeight));
+                mRGBBytes = new int[mPreviewWdith * mPreviewHeight];
+                mRGBframeBitmap = Bitmap.createBitmap(mPreviewWdith, mPreviewHeight, Bitmap.Config.ARGB_8888);
+                mCroppedBitmap = Bitmap.createBitmap(mPreviewHeight, mPreviewWdith, Bitmap.Config.ARGB_8888);
 
 
-                    mYUVBytes = new byte[planes.length][];
-                    for (int i = 0; i < planes.length; ++i) {
-                        mYUVBytes[i] = new byte[planes[i].getBuffer().capacity()];
-                    }
-                }
-
+                mYUVBytes = new byte[planes.length][];
                 for (int i = 0; i < planes.length; ++i) {
-                    planes[i].getBuffer().get(mYUVBytes[i]);
+                    mYUVBytes[i] = new byte[planes[i].getBuffer().capacity()];
                 }
-
-                final int yRowStride = planes[0].getRowStride();
-                final int uvRowStride = planes[1].getRowStride();
-                final int uvPixelStride = planes[1].getPixelStride();
-                ImageUtils.convertYUV420ToARGB8888(
-                        mYUVBytes[0],
-                        mYUVBytes[1],
-                        mYUVBytes[2],
-                        mRGBBytes,
-                        mPreviewWdith,
-                        mPreviewHeight,
-                        yRowStride,
-                        uvRowStride,
-                        uvPixelStride,
-                        false);
-
-                image.close();
-            } catch( final Exception e){
-                if (image != null) {
-                    image.close();
-                }
-                Log.e(TAG, "Exception!", e);
-                Trace.endSection();
-                return;
             }
+
+            for (int i = 0; i < planes.length; ++i) {
+                planes[i].getBuffer().get(mYUVBytes[i]);
+            }
+
+            final int yRowStride = planes[0].getRowStride();
+            final int uvRowStride = planes[1].getRowStride();
+            final int uvPixelStride = planes[1].getPixelStride();
+            ImageUtils.convertYUV420ToARGB8888(
+                    mYUVBytes[0],
+                    mYUVBytes[1],
+                    mYUVBytes[2],
+                    mRGBBytes,
+                    mPreviewWdith,
+                    mPreviewHeight,
+                    yRowStride,
+                    uvRowStride,
+                    uvPixelStride,
+                    false);
+
+            image.close();
+        } catch( final Exception e){
+            if (image != null) {
+                image.close();
+            }
+            Log.e(TAG, "Exception!", e);
+            Trace.endSection();
+            return;
+        }
 
 
         mRGBframeBitmap.setPixels(mRGBBytes, 0, mPreviewWdith, 0, 0, mPreviewWdith, mPreviewHeight);
-        drawResizedBitmap(mRGBframeBitmap, mCroppedBitmap);
+        //drawResizedBitmap(mRGBframeBitmap, mCroppedBitmap);
+        Bitmap alterBitmap=mRGBframeBitmap.copy(Bitmap.Config.ARGB_8888, true);
+        mCroppedBitmap=rotateBitmap(alterBitmap,270);
 
 
         if (SAVE_PREVIEW_BITMAP) {
-           ImageUtils.saveBitmap(mCroppedBitmap);
+            ImageUtils.saveBitmap(mCroppedBitmap);
             Log.i(TAG,"mCroppedBitmap保存成功");
         }
         else Log.i(TAG,"mCroppedBitmap保存失败");
@@ -245,13 +249,13 @@ public class OnGetImageListener implements ImageReader.OnImageAvailableListener 
                     @Override
                     public void run() {
                         Log.i(TAG,"我执行到Runnable啦！");
-                            if (!new File(Constants.getFaceShapeModelPath()).exists()) {
-                               // mTransparentTitleView.setText("Copying landmark model to " + Constants.getFaceShapeModelPath());
-                                Log.i(TAG,"copyFaceShape68ModelFile "+ Constants.getFaceShapeModelPath()+"正常");
-                                FileUtils.copyFileFromRawToOthers(mContext, R.raw.shape_predictor_68_face_landmarks, Constants.getFaceShapeModelPath());
-                            }
-                            else
-                                Log.i(TAG,"copyFaceShape68ModelFile "+ Constants.getFaceShapeModelPath()+" 有异常");
+                        if (!new File(Constants.getFaceShapeModelPath()).exists()) {
+                            // mTransparentTitleView.setText("Copying landmark model to " + Constants.getFaceShapeModelPath());
+                            Log.i(TAG,"copyFaceShape68ModelFile "+ Constants.getFaceShapeModelPath()+"正常");
+                            FileUtils.copyFileFromRawToOthers(mContext, R.raw.shape_predictor_68_face_landmarks, Constants.getFaceShapeModelPath());
+                        }
+                        else
+                            Log.i(TAG,"copyFaceShape68ModelFile "+ Constants.getFaceShapeModelPath()+" 有异常");
 
 
                         long startTime = System.currentTimeMillis();
@@ -260,7 +264,7 @@ public class OnGetImageListener implements ImageReader.OnImageAvailableListener 
                             results = mFaceDet.detect(mCroppedBitmap);
                         }
                         long endTime = System.currentTimeMillis();
-                       // mTransparentTitleView.setText("Time cost: " + String.valueOf((endTime - startTime) / 1000f) + " sec");
+                        // mTransparentTitleView.setText("Time cost: " + String.valueOf((endTime - startTime) / 1000f) + " sec");
 
 
 
@@ -302,6 +306,8 @@ public class OnGetImageListener implements ImageReader.OnImageAvailableListener 
                                 Log.i(TAG,"画布大小：w"+String.valueOf(canvas.getWidth())+"  h"+String.valueOf(canvas.getHeight()));
                                 canvas.drawRect(bounds, mFaceLandmardkPaint);
 
+                                mWindow.getPreviewHeight(mPreviewHeight);
+                                mWindow.getPreviewWidth(mPreviewWdith);
                                 mWindow.translateOrb(bounds);
 
                                 // Draw landmark
@@ -364,7 +370,7 @@ public class OnGetImageListener implements ImageReader.OnImageAvailableListener 
                                 faceHeight = faceHeight * 2;
 
 
-                                mWindow.scaleOrb(faceWidthScale * 1.20f, faceHeight * 1.20f, 1.0f );
+                                mWindow.scaleOrb(faceWidthScale * 0.80f, faceHeight * 0.80f, 1.0f );
                             }
 
                         }
@@ -376,6 +382,28 @@ public class OnGetImageListener implements ImageReader.OnImageAvailableListener 
 
         Trace.endSection();
     }
-
+    /**
+     * 选择变换
+     *
+     * @param origin 原图
+     * @param alpha  旋转角度，可正可负
+     * @return 旋转后的图片
+     */
+    private Bitmap rotateBitmap(Bitmap origin, float alpha) {
+        if (origin == null) {
+            return null;
+        }
+        int width = origin.getWidth();
+        int height = origin.getHeight();
+        Matrix matrix = new Matrix();
+        matrix.setRotate(alpha);
+        // 围绕原地进行旋转
+        Bitmap newBM = Bitmap.createBitmap(origin, 0, 0, width, height, matrix, false);
+        if (newBM.equals(origin)) {
+            return newBM;
+        }
+        origin.recycle();
+        return newBM;
+    }
 
 }

@@ -20,7 +20,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.dlibtest.SphereView.GlRenderer;
+import com.example.dlibtest.SphereView.GIRenderer;
 
 import java.lang.ref.WeakReference;
 
@@ -46,7 +46,7 @@ public class FloatingCameraWindow {
     private static final boolean DEBUG = true;
 
     GLSurfaceView mGlSurfaceView;
-    GlRenderer renderer;
+    GIRenderer renderer;
 
 
     public FloatingCameraWindow(Context context) {
@@ -65,8 +65,8 @@ public class FloatingCameraWindow {
             mScreenMaxHeight = display.getHeight();
         }
         // Default window size
-       //mWindowWidth = mScreenMaxWidth / 2;
-       //mWindowHeight = mScreenMaxHeight / 2;
+        //mWindowWidth = mScreenMaxWidth / 2;
+        //mWindowHeight = mScreenMaxHeight / 2;
         mWindowWidth = mScreenMaxWidth;
         mWindowHeight = mScreenMaxHeight;
 
@@ -178,6 +178,15 @@ public class FloatingCameraWindow {
 
     }
 
+    public void getPreviewHeight(int height)
+    {
+        renderer.PriviewH(height);
+    }
+    public void getPreviewWidth(int width)
+    {
+        renderer.PriviewW(width);
+    }
+
     public void setMoreInformation(final String info) {
         checkInit();
         mUIHandler.post(new Runnable() {
@@ -227,7 +236,7 @@ public class FloatingCameraWindow {
             mGlSurfaceView = new GLSurfaceView(floatView.getContext());
             mGlSurfaceView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
             mGlSurfaceView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
-            renderer = new GlRenderer(floatView.getContext());
+            renderer = new GIRenderer(floatView.getContext());
 
             mGlSurfaceView.setRenderer(renderer);
             mGlSurfaceView.setZOrderOnTop(true);

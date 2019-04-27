@@ -79,6 +79,7 @@ public class CameraConnectionFragment extends Fragment {
     private static final String TAG = "CameraConnectionFragment";
     private TransparentTitleView mScoreView;
     private FloatingActionButton captureBtn;
+    private FloatingCameraWindow floatBtn;
     public boolean TAKE_PHOTO=false;
 
 
@@ -304,6 +305,7 @@ public class CameraConnectionFragment extends Fragment {
         textureView = (AutoFitTextureView) view.findViewById(R.id.texture);
         // mScoreView = (TransparentTitleView) view.findViewById(R.id.results);
         captureBtn=(FloatingActionButton) view.findViewById(R.id.capture);
+
         captureBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -519,7 +521,7 @@ public class CameraConnectionFragment extends Fragment {
 
             // We set up a CaptureRequest.Builder with the output Surface.
             previewRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
-            previewRequestBuilder.addTarget(surface);
+          //  previewRequestBuilder.addTarget(surface);
 
            // Timber.tag(TAG).i("Opening camera preview: " + previewSize.getWidth() + "x" + previewSize.getHeight());
 
