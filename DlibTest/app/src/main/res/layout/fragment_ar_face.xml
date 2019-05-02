@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:surfaceview="http://schemas.android.com/apk/res-auto">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.example.dlibtest.AutoFitTextureView
+            android:id="@+id/texture"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:visibility="visible" />
+
+        <ImageView
+            android:id="@+id/iv_draw"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignStart="@+id/texture"
+            android:layout_alignEnd="@+id/texture"
+            android:layout_alignTop="@+id/texture"
+            android:layout_alignBottom="@+id/texture" />
+
+        <org.rajawali3d.view.SurfaceView
+            android:id="@+id/rajwali_surface"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            surfaceview:frameRate="60.0"
+            android:layout_alignStart="@+id/texture"
+            android:layout_alignEnd="@+id/texture"
+            android:layout_alignTop="@+id/texture"
+            android:layout_alignBottom="@id/texture"
+            surfaceview:renderMode="RENDER_WHEN_DIRTY"/>
+
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:orientation="horizontal"
+        android:layout_gravity="top">
+
+
+        <CheckBox
+            android:id="@+id/check_land_mark"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:checked="true"
+            android:text="标点"
+            android:textColor="@android:color/white" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom">
+        <LinearLayout
+            android:id="@+id/layout_bottom_btn"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:layout_gravity="bottom"
+            android:orientation="horizontal"
+            android:background="@color/cardview_light_background">
+
+            <ImageView
+                android:id="@+id/iv_ar_sticker"
+                android:layout_width="0dip"
+                android:layout_height="match_parent"
+                android:layout_weight="1.0"
+                android:scaleType="center"
+                android:src="@drawable/fragment_iv_sticker_selector"/>
+
+            <ImageView
+                android:id="@+id/iv_take_picture"
+                android:layout_width="0dip"
+                android:layout_height="match_parent"
+                android:layout_weight="1.0"
+                android:src="@drawable/fragment_iv_take_picture_selector"/>
+
+            <ImageView
+                android:id="@+id/iv_camera_filter"
+                android:layout_width="0dip"
+                android:layout_height="match_parent"
+                android:layout_weight="1.0"
+                android:scaleType="center"
+                android:src="@drawable/fragment_iv_filter_selector"/>
+
+        </LinearLayout>
+
+
+    </FrameLayout>
+
+
+</FrameLayout>

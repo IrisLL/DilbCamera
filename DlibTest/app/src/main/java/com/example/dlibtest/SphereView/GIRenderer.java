@@ -173,7 +173,7 @@ public class GIRenderer  implements GLSurfaceView.Renderer {
 
 
         this.mEarth.draw(gl);
-      //  gl.glTranslatef(( -((float)orbRect.centerX() - halfWeight) ), 0.0f, 0);
+        gl.glTranslatef(( -((float)orbRect.centerX() - halfWeight) ), 0.0f, 0);
 
     }
     @Override

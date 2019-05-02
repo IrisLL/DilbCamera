@@ -13,6 +13,7 @@ import org.opencv.core.MatOfDouble;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.MatOfPoint3f;
 import org.opencv.core.Point3;
+import org.rajawali3d.math.vector.Vector3;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,8 +21,11 @@ import java.util.List;
 import static java.lang.Math.atan2;
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
+import static org.opencv.calib3d.Calib3d.Rodrigues;
+import static org.opencv.calib3d.Calib3d.decomposeProjectionMatrix;
 import static org.opencv.core.Core.norm;
 import static org.opencv.core.Core.transpose;
+import static org.opencv.core.CvType.CV_64FC1;
 
 public class PoseDetection {
 
@@ -81,7 +85,7 @@ public class PoseDetection {
 
         double focal_length = imgMatrix.cols();
 
-
+        //生成3*3矩阵
         Mat intrinsics = Mat.eye(3, 3, CvType.CV_64F);
         intrinsics.put(0, 0, focal_length);
         intrinsics.put(1, 1, focal_length);
@@ -101,7 +105,52 @@ public class PoseDetection {
                 dist_coeffs, rotation_vector, translation_vector);
 
 
-        return new double[] {rotation_vector.get(1, 0)[0], rotation_vector.get(0, 0)[0], rotation_vector.get(2, 0)[0]};
+        Mat rotCamerMatrix1=new Mat(3,3,CvType.CV_64F);
+        Rodrigues(rotation_vector,rotCamerMatrix1);
+
+        Mat eulerAngles=getEulerAngles(rotCamerMatrix1);
+        double[] rotateEulerAngles=new double[]{eulerAngles.get(0,0)[0],eulerAngles.get(0,1)[0],eulerAngles.get(0,2)[0]};
+
+/*
+        Mat headPose=new Mat(4,4,CvType.CV_64FC1);
+        headPose.put(0,0,rotCamerMatrix1.get(0,0)[0]); headPose.put(0,1,rotCamerMatrix1.get(0,1)[0]);headPose.put(0,2,rotCamerMatrix1.get(0,2)[0]);headPose.put(0,3,translation_vector.get(0,0)[0]);
+        headPose.put(1,0,rotCamerMatrix1.get(1,0)[0]); headPose.put(1,1,rotCamerMatrix1.get(1,1)[0]);headPose.put(1,2,rotCamerMatrix1.get(1,2)[0]);headPose.put(1,3,translation_vector.get(0,1)[0]);
+        headPose.put(2,0,rotCamerMatrix1.get(2,0)[0]); headPose.put(2,1,rotCamerMatrix1.get(2,1)[0]);headPose.put(2,2,rotCamerMatrix1.get(2,2)[0]);headPose.put(2,0,translation_vector.get(0,2)[0]);
+        headPose.put(3,0,0);headPose.put(3,1,0);headPose.put(3,2,0);headPose.put(3,3,1);*/
+        double []ur=rotationMatrixToEulerAngles(rotCamerMatrix1);
+
+
+        return new double[] {rotateEulerAngles[0], rotateEulerAngles[1], rotateEulerAngles[2],
+                translation_vector.get(0,0)[0],translation_vector.get(1,0)[0],translation_vector.get(2,0)[0]};
+    }
+
+
+    public Mat getEulerAngles(Mat rotCamerMatrix)
+    {
+        Mat eulerAngles=new Mat(1,3,CvType.CV_64F);
+        Mat cameraMatrix=new Mat(3,3,CvType.CV_64F);
+        Mat rotMatrix=new Mat(3,3,CvType.CV_64F);
+        Mat transVect=new Mat(4,1,CvType.CV_64F);
+        Mat rotMatrixX=new Mat(3,3,CvType.CV_64F);
+        Mat rotMatrixY=new Mat(3,3,CvType.CV_64F);
+        Mat rotMatrixZ=new Mat(3,3,CvType.CV_64F);
+
+
+       double []num={rotCamerMatrix.get(0,0)[0],rotCamerMatrix.get(0,1)[0],rotCamerMatrix.get(0,2)[0],0,
+                rotCamerMatrix.get(1,0)[0],rotCamerMatrix.get(1,1)[0],rotCamerMatrix.get(1,2)[0],0,
+                rotCamerMatrix.get(2,0)[0],rotCamerMatrix.get(2,1)[0],rotCamerMatrix.get(2,2)[0],0};
+
+        Mat projMatirx=new Mat(3,4,CvType.CV_64FC1);
+        projMatirx.put(0,0,num[0]); projMatirx.put(0,1,num[1]); projMatirx.put(0,2,num[2]); projMatirx.put(0,3,num[3]);
+        projMatirx.put(1,0,num[4]); projMatirx.put(1,1,num[5]); projMatirx.put(1,2,num[6]); projMatirx.put(1,3,num[7]);
+        projMatirx.put(2,0,num[8]); projMatirx.put(2,1,num[9]); projMatirx.put(2,2,num[10]); projMatirx.put(2,3,num[11]);
+
+
+        decomposeProjectionMatrix(projMatirx, cameraMatrix,rotMatrix,transVect,rotMatrixX,rotMatrixY,rotMatrixZ,eulerAngles);
+
+
+
+        return eulerAngles;
     }
 
     // Checks if a matrix is a valid rotation matrix.
@@ -121,12 +170,12 @@ public class PoseDetection {
     // es rotation matrix to euler angles
     // The result is the same as MATLAB except the order
     // of the euler angles ( x and z are swapped ).
-    public static float[] rotationMatrixToEulerAngles(Mat R)
+    public static double[] rotationMatrixToEulerAngles(Mat R)
     {
 
         assert(isRotationMatrix(R));
 
-        float sy = (float)Math.sqrt(((float)(R.get(0, 0)[0] * R.get(0,0)[0])) + (float)(R.get(1,0)[0] * R.get(1,0)[0]));
+        double sy = (float)Math.sqrt(((float)(R.get(0, 0)[0] * R.get(0,0)[0])) + (float)(R.get(1,0)[0] * R.get(1,0)[0]));
 
         Boolean singular = sy < 1e-6; // If
 
@@ -143,7 +192,7 @@ public class PoseDetection {
             y = (float) atan2(-R.get(2,0)[0], sy);
             z = 0;
         }
-        return new float[] { x, y, z };
+        return new double[] { x, y, z };
 
     }
 

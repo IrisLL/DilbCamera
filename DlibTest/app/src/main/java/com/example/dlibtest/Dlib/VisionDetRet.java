@@ -17,6 +17,14 @@ public final class VisionDetRet {
     private int mBottom;
     private ArrayList<Point> mLandmarkPoints = new ArrayList<>();
 
+    // TODO add by simon at 2017/05/01
+    private ArrayList<Point> mPosePoints = new ArrayList<>();
+    // TODO add by simon at 2017/05/04
+    private ArrayList<Double> mRotate = new ArrayList<>();
+    // TODO add by simon at 2017/05/07
+    private ArrayList<Double> mTrans = new ArrayList<>();
+    private ArrayList<Double> mRotation = new ArrayList<>();
+
     VisionDetRet() {
     }
 
@@ -95,6 +103,39 @@ public final class VisionDetRet {
      */
     public ArrayList<Point> getFaceLandmarks() {
         return mLandmarkPoints;
+    }
+
+
+    public boolean addPosePoint(int x, int y) {
+        return  mPosePoints.add(new Point(x, y));
+    }
+
+    public ArrayList<Point> getPosePoints() {
+        return mPosePoints;
+    }
+
+    public boolean addRotate(double r) {
+        return mRotate.add(r);
+    }
+
+    public ArrayList<Double> getRotate() {
+        return mRotate;
+    }
+
+    public boolean addTrans(double t) {
+        return mTrans.add(t);
+    }
+
+    public ArrayList<Double> getTrans() {
+        return mTrans;
+    }
+
+    public boolean addRotation(double d) {
+        return mRotation.add(d);
+    }
+
+    public ArrayList<Double> getRotation() {
+        return mRotation;
     }
 
     @Override

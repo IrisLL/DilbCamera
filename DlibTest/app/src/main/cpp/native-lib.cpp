@@ -103,6 +103,7 @@ extern "C" {
     //调用FaceDet java类的方法
 #define DLIB_FACE_JNI_METHOD(METHOD_NAME) Java_com_example_dlibtest_Dlib_FaceDet_##METHOD_NAME
 
+
 void JNIEXPORT
 DLIB_FACE_JNI_METHOD(jniNativeClassInit)(JNIEnv *env, jclass _this) {}
 
@@ -133,6 +134,7 @@ jobjectArray getDetectResult(JNIEnv *env, DetectorPtr faceDetector, const int &s
         }
         return jDetRetArray;
 }
+
 
 JNIEXPORT jobjectArray JNICALL
 DLIB_FACE_JNI_METHOD(jniDetect)(JNIEnv* env, jobject thiz,

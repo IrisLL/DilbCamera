@@ -1,12 +1,20 @@
 package com.example.dlibtest;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.RawRes;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.MessageDigest;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class FileUtils {
 
@@ -35,5 +43,110 @@ public class FileUtils {
                 e.printStackTrace();
             }
         }
+    }
+
+
+
+    public static void saveBitmapToFile(Context context, Bitmap bitmap, String path, String name) {
+        File file = new File(path);
+        if(!file.exists()) {
+            boolean res = file.mkdirs();
+            if(!res){
+                //Toast.makeText(context, "创建目录失败", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        }
+
+        File imageFile = new File(file, name);
+        try {
+            imageFile.createNewFile();
+            FileOutputStream fos = new FileOutputStream(imageFile);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+            fos.flush();
+            fos.close();
+            //Toast.makeText(context, "图片已保存到 " + path, Toast.LENGTH_SHORT).show();
+
+        } catch (IOException e) {
+            //Toast.makeText(context, "图片保存失败 IOException", Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+        }
+    }
+
+    public static void copyFile(String srcPath, String dstPath) {
+        try {
+            int bytesum = 0;
+            int byteread = 0;
+            InputStream inStream = new FileInputStream(srcPath);
+            FileOutputStream fs = new FileOutputStream(dstPath);
+            byte[] buffer = new byte[1024];
+            while ( (byteread = inStream.read(buffer)) != -1) {
+                bytesum += byteread; //字节数 文件大小
+                System.out.println(bytesum);
+                fs.write(buffer, 0, byteread);
+            }
+            inStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public static String getMD5(String message) {
+        String md5str = "";
+        try {
+            //1 创建一个提供信息摘要算法的对象，初始化为md5算法对象
+            MessageDigest md = MessageDigest.getInstance("MD5");
+
+            //2 将消息变成byte数组
+            byte[] input = message.getBytes();
+
+            //3 计算后获得字节数组,这就是那128位了
+            byte[] buff = md.digest(input);
+
+            //4 把数组每一字节（一个字节占八位）换成16进制连成md5字符串
+            md5str = bytesToHex(buff);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return md5str;
+    }
+
+    /**
+     * 二进制转十六进制
+     * @param bytes
+     * @return
+     */
+    public static String bytesToHex(byte[] bytes) {
+        StringBuffer md5str = new StringBuffer();
+        //把数组每一字节换成16进制连成md5字符串
+        int digital;
+        for (int i = 0; i < bytes.length; i++) {
+            digital = bytes[i];
+
+            if(digital < 0) {
+                digital += 256;
+            }
+            if(digital < 16){
+                md5str.append("0");
+            }
+            md5str.append(Integer.toHexString(digital));
+        }
+        //return md5str.toString().toUpperCase();
+        return md5str.toString().toLowerCase();
+    }
+    public static File getOutputMediaFile(){
+        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES), "BeautyCamera");
+        if (!mediaStorageDir.exists()) {
+            if (!mediaStorageDir.mkdirs()) {
+                return null;
+            }
+        }
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.CHINESE).format(new Date());
+        File mediaFile = new File(mediaStorageDir.getPath() + File.separator +
+                "IMG_" + timeStamp + ".jpg");
+
+        return mediaFile;
     }
 }
